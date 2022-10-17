@@ -13,6 +13,7 @@
 		575FADE128FC8F31007A4B84 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 575FADE028FC8F31007A4B84 /* Assets.xcassets */; };
 		575FADE428FC8F31007A4B84 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 575FADE228FC8F31007A4B84 /* LaunchScreen.storyboard */; };
 		575FADEC28FCA160007A4B84 /* PortfoliosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575FADEB28FCA160007A4B84 /* PortfoliosViewController.swift */; };
+		575FADF228FD6935007A4B84 /* PortfolioModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575FADF128FD6935007A4B84 /* PortfolioModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		575FADE328FC8F31007A4B84 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		575FADE528FC8F31007A4B84 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		575FADEB28FCA160007A4B84 /* PortfoliosViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfoliosViewController.swift; sourceTree = "<group>"; };
+		575FADF128FD6935007A4B84 /* PortfolioModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,7 @@
 				575FADD728FC8F2E007A4B84 /* AppDelegate.swift */,
 				575FADD928FC8F2E007A4B84 /* SceneDelegate.swift */,
 				575FADEB28FCA160007A4B84 /* PortfoliosViewController.swift */,
+				575FADF128FD6935007A4B84 /* PortfolioModel.swift */,
 				575FADDD28FC8F2E007A4B84 /* Main.storyboard */,
 				575FADE028FC8F31007A4B84 /* Assets.xcassets */,
 				575FADE228FC8F31007A4B84 /* LaunchScreen.storyboard */,
@@ -140,6 +143,7 @@
 			files = (
 				575FADEC28FCA160007A4B84 /* PortfoliosViewController.swift in Sources */,
 				575FADD828FC8F2E007A4B84 /* AppDelegate.swift in Sources */,
+				575FADF228FD6935007A4B84 /* PortfolioModel.swift in Sources */,
 				575FADDA28FC8F2E007A4B84 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -285,6 +289,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = "ViFinance Only Portfolio/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -302,6 +310,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = "ViFinance Only Portfolio/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

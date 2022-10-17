@@ -15,10 +15,10 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter Portfolio Amount" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="65x-63-xiM">
-                                <rect key="frame" x="20" y="89.5" width="290" height="34"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter Portfolio Amount" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="65x-63-xiM">
+                                <rect key="frame" x="120" y="89.5" width="175" height="34"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="290" id="ePl-dp-TdZ"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="130" id="ePl-dp-TdZ"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
@@ -30,14 +30,17 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yPc-ot-epE">
-                                <rect key="frame" x="330" y="91.5" width="64" height="30"/>
+                                <rect key="frame" x="315" y="91.5" width="64" height="30"/>
                                 <state key="normal" title="Calculate"/>
+                                <connections>
+                                    <action selector="calculatePressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9eS-ep-A8w"/>
+                                </connections>
                             </button>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="gm2-zZ-lxs">
                                 <rect key="frame" x="20" y="171.5" width="374" height="690.5"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="r34-e5-6mB">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="r34-e5-6mB" customClass="CustomCell" customModule="ViFinance_Only_Portfolio" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="374" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="r34-e5-6mB" id="fk7-Bc-bnG">
@@ -87,8 +90,19 @@
                                                 <constraint firstAttribute="bottom" secondItem="YNp-Or-DHv" secondAttribute="bottom" constant="12.5" id="z4E-eM-eiG"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="QuantityLabel" destination="eag-Jo-bTh" id="gu5-ML-b2p"/>
+                                            <outlet property="amountLabel" destination="HfN-3S-lfe" id="ddf-0R-oXE"/>
+                                            <outlet property="priceLabel" destination="RBZ-lM-gfB" id="0WI-15-KSg"/>
+                                            <outlet property="shareLabel" destination="s7l-Nz-Ywn" id="5rE-0f-43q"/>
+                                            <outlet property="tickerLabel" destination="9J8-1a-i2u" id="r6W-SP-cCW"/>
+                                        </connections>
                                     </tableViewCell>
                                 </prototypes>
+                                <connections>
+                                    <outlet property="dataSource" destination="BYZ-38-t0r" id="k9P-dL-Jfr"/>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="LkO-Gj-hE3"/>
+                                </connections>
                             </tableView>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="21" translatesAutoresizingMaskIntoConstraints="NO" id="d4U-20-WO3">
                                 <rect key="frame" x="25" y="138.5" width="364" height="18"/>
@@ -125,16 +139,25 @@
                                     </label>
                                 </subviews>
                             </stackView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DR7-nn-ufO">
+                                <rect key="frame" x="25" y="97" width="10.5" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
                             <constraint firstItem="gm2-zZ-lxs" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="0PV-bG-nwd"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="yPc-ot-epE" secondAttribute="trailing" symbolic="YES" id="2Gr-5j-JO7"/>
                             <constraint firstItem="gXi-o1-QXM" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="7UW-RZ-U0Y"/>
+                            <constraint firstItem="DR7-nn-ufO" firstAttribute="top" secondItem="gXi-o1-QXM" secondAttribute="bottom" constant="17.5" id="8q6-R8-giN"/>
+                            <constraint firstItem="DR7-nn-ufO" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="25" id="BUn-Eg-LFW"/>
                             <constraint firstItem="yPc-ot-epE" firstAttribute="centerY" secondItem="65x-63-xiM" secondAttribute="centerY" id="Bs8-ju-HnE"/>
+                            <constraint firstItem="65x-63-xiM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="DR7-nn-ufO" secondAttribute="trailing" constant="8" symbolic="YES" id="Mpf-7f-xwc"/>
                             <constraint firstItem="yPc-ot-epE" firstAttribute="leading" secondItem="65x-63-xiM" secondAttribute="trailing" constant="20" id="Pvw-3Z-tj5"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="gm2-zZ-lxs" secondAttribute="trailing" constant="20" id="R8D-O1-cnU"/>
-                            <constraint firstItem="65x-63-xiM" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="ZD2-B2-j9I"/>
+                            <constraint firstItem="65x-63-xiM" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="120" id="ZD2-B2-j9I"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="d4U-20-WO3" secondAttribute="trailing" constant="25" id="bc0-6U-p2G"/>
                             <constraint firstItem="d4U-20-WO3" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="25" id="jvC-oJ-Vri"/>
                             <constraint firstItem="d4U-20-WO3" firstAttribute="top" secondItem="65x-63-xiM" secondAttribute="bottom" constant="15" id="n32-pU-5Ee"/>
@@ -145,6 +168,12 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
+                    <connections>
+                        <outlet property="amountLabel" destination="DR7-nn-ufO" id="tOC-Ka-req"/>
+                        <outlet property="amountTextField" destination="65x-63-xiM" id="Gk0-FQ-JXU"/>
+                        <outlet property="calculateButton" destination="yPc-ot-epE" id="5yZ-bw-LnB"/>
+                        <outlet property="tableView" destination="gm2-zZ-lxs" id="Cn5-Is-QgU"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>

@@ -8,12 +8,35 @@
 
 import UIKit
 
+class CustomCell: UITableViewCell {
+    
+    @IBOutlet weak var tickerLabel: UILabel!
+    @IBOutlet weak var shareLabel: UILabel!
+    @IBOutlet weak var amountLabel: UILabel!
+    @IBOutlet weak var priceLabel: UILabel!
+    @IBOutlet weak var QuantityLabel: UILabel!
+    
+}
+
+
+
 class PortfoliosViewController: UIViewController {
 
+    
+    @IBOutlet weak var amountLabel: UILabel!
+    @IBOutlet weak var amountTextField: UITextField!
+    @IBOutlet weak var calculateButton: UIButton!
+    @IBOutlet weak var tableView: UITableView!
+    
+    var stocksInPortfolio = PortfolioModel.getPortfolio()
+    var amountOfPortfolio = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        
+       
+        
+        tableView.tableFooterView = UIView() //скрыл разлиновку таблицы ниже, последнего элемента портфеля.
     }
     
 
@@ -26,5 +49,31 @@ class PortfoliosViewController: UIViewController {
         // Pass the selected object to the new view controller.
     }
     */
+    
+    @IBAction func calculatePressed(_ sender: UIButton) {
+        amountLabel.text = amountTextField.text ?? String(0)
+        amountOfPortfolio = Int(amountLabel.text!)!
+    }
+    
+}
 
+extension PortfoliosViewController: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return stocksInPortfolio.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! CustomCell
+        cell.tickerLabel.text = stocksInPortfolio[indexPath.row].ticker
+        cell.shareLabel.text = String(stocksInPortfolio[indexPath.row].share)
+        cell.amountLabel.text = String(stocksInPortfolio[indexPath.row].amount)
+        cell.priceLabel.text = String(stocksInPortfolio[indexPath.row].price)
+        cell.QuantityLabel.text = String(stocksInPortfolio[indexPath.row].quantity)
+        
+        // вставить параметры, после создания модели
+        
+        return cell
+    }
+    
+    
 }
