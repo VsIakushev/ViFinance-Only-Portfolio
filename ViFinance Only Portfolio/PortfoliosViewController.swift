@@ -8,7 +8,7 @@
 
 import UIKit
 
-var amountOfPortfolio = 15000
+var amountOfPortfolio = 0
 
 class CustomCell: UITableViewCell {
     
