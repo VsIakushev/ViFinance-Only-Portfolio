@@ -54,13 +54,21 @@ struct PortfolioModel {
 }
 
 ///////
-class PortfoliosViewController: UIViewController {
+class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
 
     
     @IBOutlet weak var amountLabel: UILabel!
     @IBOutlet weak var amountTextField: UITextField!
     @IBOutlet weak var calculateButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
+    
+    // две функции, для скрытия клавиатуры по свайпу
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
+    }
+    @objc func hideKeyboardOnSwipeDown() {
+        view.endEditing(true)
+    }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
@@ -72,7 +80,13 @@ class PortfoliosViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         amountLabel.text = String(amountOfPortfolio)
-        amountTextField.keyboardType = .numberPad
+//        amountTextField.keyboardType = .numberPad
+        
+    // Добавляю свайп, по которому убирается клавиатура
+        let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(self.hideKeyboardOnSwipeDown))
+        swipeDown.delegate = self
+        swipeDown.direction =  UISwipeGestureRecognizer.Direction.down
+        self.tableView.addGestureRecognizer(swipeDown)
         
         
         tableView.tableFooterView = UIView() //скрыл разлиновку таблицы ниже, последнего элемента портфеля.
@@ -117,6 +131,7 @@ class PortfoliosViewController: UIViewController {
 }
 
 extension PortfoliosViewController: UITableViewDelegate, UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return stocksInPortfolio.count
     }
@@ -130,13 +145,14 @@ extension PortfoliosViewController: UITableViewDelegate, UITableViewDataSource {
         cell.QuantityLabel.text = String(stocksInPortfolio[indexPath.row].quantity)
         
         return cell
+        
     }
     
     
 }
 
 
-// This extension turns on ability to add "Done" Button to NUMPad-keyboard.
+// This extension turns on ability to add "Done" Button to NumPad-keyboard (in Attributes Inspector)
 // Have to find out how to make connection between Done-button and calculations in class.
 
 extension UITextField{
