@@ -8,6 +8,8 @@
 
 import Foundation
 
+// сделать передачу amountPortfolio между свифт-файлами, сюда, для расчета
+
 struct PortfolioModel {
     var ticker : String
     var share : Double
