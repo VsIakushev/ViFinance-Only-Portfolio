@@ -8,7 +8,7 @@
 
 import UIKit
 
-var amountOfPortfolio = 0
+var amountOfPortfolio = 0.0
 
 class CustomCell: UITableViewCell {
     
@@ -62,8 +62,8 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
             let tf = alertController.textFields?.first
             if let newPortfolioAmount = tf?.text {
-                // добавить проверку, чтобы вводимое значение было числом
-                amountOfPortfolio = Int(newPortfolioAmount)!
+                // добавить проверку, чтобы вводимое значение было числом Double
+                amountOfPortfolio = Double(newPortfolioAmount)!
                 self.amountLabel.text = newPortfolioAmount
                 self.stocksInPortfolio = PortfolioModel.getPortfolio()
                 self.tableView.reloadData()
@@ -72,6 +72,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         }
         alertController.addTextField { _ in }
         alertController.textFields?.first?.keyboardType = .numberPad
+        // можно сделать клавиатуру .decimalPad, но только после проверки соответствия введенного значения Double
         let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
         
         alertController.addAction(cancelAction)
