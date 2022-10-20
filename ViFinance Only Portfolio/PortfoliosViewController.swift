@@ -19,18 +19,17 @@ class CustomCell: UITableViewCell {
     @IBOutlet weak var QuantityLabel: UILabel!
     
 }
-///////
 
 struct PortfolioModel {
     var ticker : String
-    var share : Double
+    var share : String
     var amount : Double
     var price : Double
     var quantity : Int
 
     
     static  let arrayOfTickers = ["AAPL", "MSFT", "GOOG", "BRK.B", "META", "NVDA"]
-    static let arrayOfShares = [21.15, 17.22, 11.30, 6.55, 4.35, 3.47 ]
+    static var arrayOfShares = [21.15, 17.22, 11.31, 6.55, 4.35, 3.47 ]
     static var arrayOfAmounts = [0.0]
     static  let arrayOfPrices = [153.12, 247.42, 120.57, 330.14, 140.32, 160.58]
     static  let arrayOfNubmerOfStocks = [45, 22, 16, 13, 7, 6]
@@ -39,27 +38,52 @@ struct PortfolioModel {
         var Portfolio = [PortfolioModel]()
         arrayOfAmounts.removeAll()
         
-        
         for i in 0..<arrayOfTickers.count {
             arrayOfAmounts.append(round((Double(amountOfPortfolio) * arrayOfShares[i] / 100)*10)/10)
-//            arrayOfAmounts.append((10000 * arrayOfShares[i]) / 100)
+            
         }
         
         for i in 0..<arrayOfTickers.count {
-            Portfolio.append(PortfolioModel(ticker: arrayOfTickers[i], share: arrayOfShares[i], amount: arrayOfAmounts[i], price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
-            
+            Portfolio.append(PortfolioModel(ticker: arrayOfTickers[i], share: String(arrayOfShares[i]) + "%", amount: arrayOfAmounts[i], price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
         }
         return Portfolio
     }
 }
 
-///////
+
 class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
 
     
     @IBOutlet weak var amountLabel: UILabel!
-    @IBOutlet weak var amountTextField: UITextField!
-    @IBOutlet weak var calculateButton: UIButton!
+    
+    
+    @IBAction func editPortfolioAmount(_ sender: UIButton) {
+        let alertController = UIAlertController(title: "Edit Portfolio Amount", message: "Enter your Portfolio amount", preferredStyle: .alert)
+        let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
+            let tf = alertController.textFields?.first
+            if let newPortfolioAmount = tf?.text {
+                // добавить проверку, чтобы вводимое значение было числом
+                amountOfPortfolio = Int(newPortfolioAmount)!
+                self.amountLabel.text = newPortfolioAmount
+                self.stocksInPortfolio = PortfolioModel.getPortfolio()
+                self.tableView.reloadData()
+                
+            }
+        }
+        alertController.addTextField { _ in }
+        alertController.textFields?.first?.keyboardType = .numberPad
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
+        
+        alertController.addAction(cancelAction)
+        alertController.addAction(saveAction)
+        
+        present(alertController, animated: true, completion: nil)
+        
+    }
+    
+    
+//    @IBOutlet weak var amountTextField: UITextField! // del later in this branch
+//    @IBOutlet weak var calculateButton: UIButton! // del later in this branch
     @IBOutlet weak var tableView: UITableView!
     
     // две функции, для скрытия клавиатуры по свайпу
@@ -72,7 +96,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
-    } // скрытие клавиатуры после ввода
+    } // скрытие клавиатуры после ввода по тапу на пустое поле
     
     var stocksInPortfolio = PortfolioModel.getPortfolio()
     
@@ -106,26 +130,23 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     */
     
-    @IBAction func calculatePressed(_ sender: UIButton) {
-       
-        if let _ = Int(amountTextField.text!) {
-            amountLabel.text = amountTextField.text ?? String(0)
-            amountOfPortfolio = Int(amountLabel.text!)!
-            
-            stocksInPortfolio = PortfolioModel.getPortfolio()
-            tableView.reloadData()
-            // обновление таблицы после нажатия кнопки
-        } else {
-            let alert = UIAlertController(title: "Wrong format!", message: "Enter your portfolio amount", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-            alert.addAction(okAction)
-            present(alert, animated: true, completion: nil)
-            print("Wrong amount format!")
-        }
-        
-        
-        
-    }
+//    @IBAction func calculatePressed(_ sender: UIButton) {
+//
+//        if let _ = Int(amountTextField.text!) {
+//            amountLabel.text = amountTextField.text ?? String(0)
+//            amountOfPortfolio = Int(amountLabel.text!)!
+//
+//            stocksInPortfolio = PortfolioModel.getPortfolio()
+//            tableView.reloadData()
+//            // обновление таблицы после нажатия кнопки
+//        } else {
+//            let alert = UIAlertController(title: "Wrong format!", message: "Enter your portfolio amount", preferredStyle: .alert)
+//            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+//            alert.addAction(okAction)
+//            present(alert, animated: true, completion: nil)
+//            print("Wrong amount format!")
+//        }
+//    }
     
     
 }
