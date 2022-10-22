@@ -56,22 +56,33 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var amountLabel: UILabel!
     
-    
+    // MARK: Editing Amount
     @IBAction func editPortfolioAmount(_ sender: UIButton) {
         let alertController = UIAlertController(title: "Edit Portfolio Amount", message: "Enter your Portfolio amount", preferredStyle: .alert)
         let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
             let tf = alertController.textFields?.first
             if let newPortfolioAmount = tf?.text {
-                // добавить проверку, чтобы вводимое значение было числом Double
-                amountOfPortfolio = Double(newPortfolioAmount)!
-                self.amountLabel.text = newPortfolioAmount
-                self.stocksInPortfolio = PortfolioModel.getPortfolio()
-                self.tableView.reloadData()
-                
+               
+                amountOfPortfolio = Double(newPortfolioAmount) ?? 0.0
+                if amountOfPortfolio == Double(newPortfolioAmount) {
+                    UserSettings.portfolioAmount = amountOfPortfolio
+                    self.amountLabel.text = newPortfolioAmount
+                    self.stocksInPortfolio = PortfolioModel.getPortfolio()
+                    self.tableView.reloadData()
+                } else {
+                    self.amountLabel.text = "Bad value!"
+                    self.stocksInPortfolio = PortfolioModel.getPortfolio()
+                    self.tableView.reloadData()
+                    
+                    let alert = UIAlertController(title: "Wrong format!", message: "Enter your portfolio amount", preferredStyle: .alert)
+                    let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                    alert.addAction(okAction)
+                    self.present(alert, animated: true, completion: nil)
+                }
             }
         }
         alertController.addTextField { _ in }
-        alertController.textFields?.first?.keyboardType = .numberPad
+        alertController.textFields?.first?.keyboardType = .decimalPad
         // можно сделать клавиатуру .decimalPad, но только после проверки соответствия введенного значения Double
         let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
         
@@ -80,11 +91,11 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         
         present(alertController, animated: true, completion: nil)
         
+//        UserSettings.portfolioAmount = amountOfPortfolio
+        
     }
     
     
-//    @IBOutlet weak var amountTextField: UITextField! // del later in this branch
-//    @IBOutlet weak var calculateButton: UIButton! // del later in this branch
     @IBOutlet weak var tableView: UITableView!
     
     // две функции, для скрытия клавиатуры по свайпу
@@ -101,11 +112,20 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     var stocksInPortfolio = PortfolioModel.getPortfolio()
     
+    // MARK : viewDidLoad
+    
+//    override func viewWillAppear(_ animated: Bool) {
+//    super.viewWillAppear(animated)
+//        amountOfPortfolio = UserSettings.portfolioAmount
+//    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        amountOfPortfolio = UserSettings.portfolioAmount
         amountLabel.text = String(amountOfPortfolio)
-//        amountTextField.keyboardType = .numberPad
+        
+        // почему-то сумма сохраняется при втором изменении суммы. При однократном - не сохраняется. Разобраться, в какой момент происходит сохранение, а в какой чтение при загрузке приложения.
+        
         
     // Добавляю свайп, по которому убирается клавиатура
         let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(self.hideKeyboardOnSwipeDown))

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5715C7FF2901A467008C3978 /* userDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5715C7FE2901A467008C3978 /* userDefaults.swift */; };
 		575FADD828FC8F2E007A4B84 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575FADD728FC8F2E007A4B84 /* AppDelegate.swift */; };
 		575FADDA28FC8F2E007A4B84 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575FADD928FC8F2E007A4B84 /* SceneDelegate.swift */; };
 		575FADE128FC8F31007A4B84 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 575FADE028FC8F31007A4B84 /* Assets.xcassets */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5715C7FE2901A467008C3978 /* userDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = userDefaults.swift; sourceTree = "<group>"; };
 		575FADD428FC8F2E007A4B84 /* ViFinance Only Portfolio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ViFinance Only Portfolio.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		575FADD728FC8F2E007A4B84 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		575FADD928FC8F2E007A4B84 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 				575FADD728FC8F2E007A4B84 /* AppDelegate.swift */,
 				575FADD928FC8F2E007A4B84 /* SceneDelegate.swift */,
 				575FADEB28FCA160007A4B84 /* PortfoliosViewController.swift */,
+				5715C7FE2901A467008C3978 /* userDefaults.swift */,
 				575FAE1928FEB25F007A4B84 /* Main.storyboard */,
 				575FADE028FC8F31007A4B84 /* Assets.xcassets */,
 				575FADE228FC8F31007A4B84 /* LaunchScreen.storyboard */,
@@ -142,6 +145,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				575FADEC28FCA160007A4B84 /* PortfoliosViewController.swift in Sources */,
+				5715C7FF2901A467008C3978 /* userDefaults.swift in Sources */,
 				575FADD828FC8F2E007A4B84 /* AppDelegate.swift in Sources */,
 				575FADF528FE9E36007A4B84 /* ViFinance Only Portfolio.xcdatamodeld in Sources */,
 				575FADDA28FC8F2E007A4B84 /* SceneDelegate.swift in Sources */,
