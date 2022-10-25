@@ -123,8 +123,9 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         super.viewDidLoad()
         amountOfPortfolio = UserSettings.portfolioAmount
         amountLabel.text = String(amountOfPortfolio)
-        
-        // почему-то сумма сохраняется при втором изменении суммы. При однократном - не сохраняется. Разобраться, в какой момент происходит сохранение, а в какой чтение при загрузке приложения.
+        self.stocksInPortfolio = PortfolioModel.getPortfolio()
+        self.tableView.reloadData()
+        // обновление таблицы при загрузке, чтобы сразу были видны значения
         
         
     // Добавляю свайп, по которому убирается клавиатура
