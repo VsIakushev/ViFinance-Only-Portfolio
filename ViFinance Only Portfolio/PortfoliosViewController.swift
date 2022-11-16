@@ -114,13 +114,21 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     // MARK : viewDidLoad
     
+    let networkStockInfoManager = NetworkStockManager()
+    
 //    override func viewWillAppear(_ animated: Bool) {
 //    super.viewWillAppear(animated)
 //        amountOfPortfolio = UserSettings.portfolioAmount
 //    }
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //тест получения данных об акции с помощью API
+        networkStockInfoManager.fetchStockMarketCapitalization(forCompany: "AAPL")
+        networkStockInfoManager.fetchStockPrice(forCompany: "AAPL")
+        
         amountOfPortfolio = UserSettings.portfolioAmount
         amountLabel.text = String(amountOfPortfolio)
         self.stocksInPortfolio = PortfolioModel.getPortfolio()
