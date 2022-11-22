@@ -15,24 +15,47 @@ struct NetworkStockManager {
         let session = URLSession(configuration: .default)
         let task = session.dataTask(with: url) { data, response, error in
             if let data = data {
-                let dataString = String(data: data, encoding: .utf8)
-                print(dataString!)
+             let currentStockPriceData = self.parsePriceJSON(withData: data)
             }
         }
         task.resume()
     }
     
-    
-    func fetchStockMarketCapitalization(forCompany ticker: String) {
+    //
+    func fetchStockMarketCapitalization(forCompany ticker: String, completionHandler: @escaping (CurrentStockMarketCapData) -> Void) {
         let urlString = "https://financialmodelingprep.com/api/v3/market-capitalization/\(ticker)?apikey=\(apiKeyfinancialmodelingprep)"
         guard let url = URL(string: urlString) else { return }
         let session = URLSession(configuration: .default)
         let task = session.dataTask(with: url) { data, response, error in
             if let data = data {
-                let dataString = String(data: data, encoding: .utf8)
-                print(dataString!)
+                if let currentStockMarketCapData = self.parseMarketCapJSON(withData: data) {
+                completionHandler(currentStockMarketCapData)
+                }
             }
         }
         task.resume()
+    }
+    
+    func parsePriceJSON(withData data: Data) {
+        let decoder = JSONDecoder()
+        do {
+            let currentStockPriceData = try decoder.decode(CurrentStockPriceData.self, from: data)
+            print(currentStockPriceData.first!.price)
+        } catch let error as NSError {
+            print(error)
+        }
+    }
+    
+    func parseMarketCapJSON(withData data: Data) -> CurrentStockMarketCapData? {
+        let decoder = JSONDecoder()
+        do {
+            let currentStockMarketCapData = try decoder.decode(CurrentStockMarketCapData.self, from: data)
+            print(currentStockMarketCapData.first!.marketCap)
+            return currentStockMarketCapData
+            
+        } catch let error as NSError {
+            print(error)
+            return nil
+        }
     }
 }

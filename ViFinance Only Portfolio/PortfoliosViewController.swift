@@ -55,6 +55,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
 
     
     @IBOutlet weak var amountLabel: UILabel!
+    @IBOutlet weak var testLabel: UILabel!
     
     // MARK: Editing Amount
     @IBAction func editPortfolioAmount(_ sender: UIButton) {
@@ -126,11 +127,17 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         super.viewDidLoad()
         
         //тест получения данных об акции с помощью API
-        networkStockInfoManager.fetchStockMarketCapitalization(forCompany: "AAPL")
+        networkStockInfoManager.fetchStockMarketCapitalization(forCompany: "AAPL") { currentStockMarketCap in
+            
+        }
         networkStockInfoManager.fetchStockPrice(forCompany: "AAPL")
         
+        
+                
+        // Загрузка суммы портфеля
         amountOfPortfolio = UserSettings.portfolioAmount
         amountLabel.text = String(amountOfPortfolio)
+        
         self.stocksInPortfolio = PortfolioModel.getPortfolio()
         self.tableView.reloadData()
         // обновление таблицы при загрузке, чтобы сразу были видны значения
@@ -185,6 +192,8 @@ extension PortfoliosViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return stocksInPortfolio.count
+        
+    
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
