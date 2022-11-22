@@ -56,6 +56,7 @@ struct NetworkStockManager {
         } catch let error as NSError {
             print(error)
             return nil
+            
         }
     }
 }
