@@ -8,28 +8,28 @@
 
 import Foundation
 
-struct NetworkStockManager {
+class NetworkStockManager {
     func fetchStockPrice(forCompany ticker: String) {
         let urlString = "https://financialmodelingprep.com/api/v3/quote-short/\(ticker)?apikey=\(apiKeyfinancialmodelingprep)"
         guard let url = URL(string: urlString) else { return }
         let session = URLSession(configuration: .default)
         let task = session.dataTask(with: url) { data, response, error in
             if let data = data {
-             let currentStockPriceData = self.parsePriceJSON(withData: data)
+             let currentStockPrice = self.parsePriceJSON(withData: data)
             }
         }
         task.resume()
     }
     
     //
-    func fetchStockMarketCapitalization(forCompany ticker: String, completionHandler: @escaping (CurrentStockMarketCapData) -> Void) {
+    func fetchStockMarketCapitalization(forCompany ticker: String, completionHandler: @escaping (CurrentStockMarketCap) -> Void) {
         let urlString = "https://financialmodelingprep.com/api/v3/market-capitalization/\(ticker)?apikey=\(apiKeyfinancialmodelingprep)"
         guard let url = URL(string: urlString) else { return }
         let session = URLSession(configuration: .default)
         let task = session.dataTask(with: url) { data, response, error in
             if let data = data {
-                if let currentStockMarketCapData = self.parseMarketCapJSON(withData: data) {
-                completionHandler(currentStockMarketCapData)
+                if let currentStockMarketCap = self.parseMarketCapJSON(withData: data) {
+                    completionHandler(currentStockMarketCap)
                 }
             }
         }
@@ -40,18 +40,20 @@ struct NetworkStockManager {
         let decoder = JSONDecoder()
         do {
             let currentStockPriceData = try decoder.decode(CurrentStockPriceData.self, from: data)
-            print(currentStockPriceData.first!.price)
+//            print(currentStockPriceData.first!.price)
         } catch let error as NSError {
             print(error)
         }
     }
     
-    func parseMarketCapJSON(withData data: Data) -> CurrentStockMarketCapData? {
+    func parseMarketCapJSON(withData data: Data) -> CurrentStockMarketCap? {
         let decoder = JSONDecoder()
         do {
             let currentStockMarketCapData = try decoder.decode(CurrentStockMarketCapData.self, from: data)
+            guard let currentStockMarketCap = CurrentStockMarketCap(currentStockMarketCapData: currentStockMarketCapData) else { return nil }
+            
             print(currentStockMarketCapData.first!.marketCap)
-            return currentStockMarketCapData
+            return currentStockMarketCap
             
         } catch let error as NSError {
             print(error)

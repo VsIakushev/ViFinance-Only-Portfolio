@@ -10,7 +10,7 @@ import Foundation
 
 struct CurrentStockMarketCapDatum: Codable {
 //    let symbol, date: String
-    let marketCap: Int
+    let marketCap: Double
 }
 
 typealias CurrentStockMarketCapData = [CurrentStockMarketCapDatum]

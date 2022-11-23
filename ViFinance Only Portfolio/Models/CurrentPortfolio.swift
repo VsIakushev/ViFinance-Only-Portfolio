@@ -27,6 +27,8 @@ struct PortfolioModelTest {
 // создать 2 функции: CreatePortfolio и RefreshPortfolio. Первая применяется при вводе суммы портфеля вручную. Вторая - при открытии приложения, если сумма портфеля не 0.
 // хранить данные о существующем количестве акций для обновления портфеля в userDefaults
 
+// MarketCap обновляется только при изменении суммы портфеля вручную, чтобы расчитать пропорции. При обновлении при открытии (во viewDidLoad) подгружать только цену, и умножать на прежнее количество акций(сохраненное в userDefaults) = получим Portfolio amount
+// Добавить ActivityIndicator в момент первой загрузки, и при обновлении PortfolioAmount
 
 
 struct CompanyInfo {
@@ -38,7 +40,7 @@ struct CompanyInfo {
 }
 
 
-
+var testValue: Int = 0
 let networkStockInfoManager = NetworkStockManager()
 let staticArrayOfTickers = ["BIIB", "WFC", "DIS", "BLK", "JPM"]
 
@@ -60,19 +62,46 @@ struct PortfolioModelTestNew {
     
     
     
-    static func recieveMarketCapData(forCompany company: String) {
+//    static func recieveMarketCapData(forCompany company: String) -> Int {
         //тест получения данных об акции с помощью API
-        
-//        networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company)
-    
-    }
+//        testValue = networkStockInfoManager.fetchStockMarketCapitalization(forCompany: "AAPL") { currentStockMarketCapData in
+//
+//        }
+//
+//    }
     
     // Доли компаний в портфеле - в зависимости от капитализации. Равна капитализации конкретной компании / Сумма капитализации всех компаний. 1) Расчитать сумму капитализации всех компаний. 2) Расчитать долю каждой компании и добавить значение в массив
+//    func apiToInt(company: String) -> Int {
+//        networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company) { currentStockMarketCap in
+//        currentStockMarketCap.marketCap
+//            return currentStockMarketCap.marketCap
+//            }
+//        }
+    
+//    func creatingMarketCapInt() {
+//        networkStockInfoManager.fetchStockMarketCapitalization(forCompany: "AAPL") { [weak self] currentStockMarketCap in
+//                print(currentStockMarketCap.marketCap)
+//                guard let self = self else { return }
+//                self.updateInterface(marketCap: currentStockMarketCap)
+//            }
+//    }
+//    
+//    func updateInterface(marketCap: CurrentStockMarketCap){
+//        DispatchQueue.main.async {
+//            self.testLabel.text = marketCap.marketCapString
+//        }
+//
+//    }
+    
     func calculateShares() {
         var markerCapSumm = 0
+        
+        
+        
 //        for company in staticArrayOfTickers {
-//        markerCapSumm += networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company)
-//
+//            let currentStockMarketCap =  networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company) { currentStockMarketCap in
+//                currentStockMarketCap.marketCap
+//            }
 //        }
     }
     
@@ -83,7 +112,7 @@ struct PortfolioModelTestNew {
         arrayOfAmounts.removeAll()
         
         for i in 0..<arrayOfTickers.count {
-            arrayOfAmounts.append(round((Double(amountOfPortfolio) * arrayOfShares[i] / 100)*10)/10)
+            arrayOfAmounts.append(round((Double(PortfolioAmount) * arrayOfShares[i] / 100)*10)/10)
             
         }
         

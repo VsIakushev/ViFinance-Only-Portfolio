@@ -151,23 +151,38 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xca-Ch-bPe">
-                                <rect key="frame" x="186" y="750" width="42" height="20.5"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xca-Ch-bPe">
+                                <rect key="frame" x="202" y="750" width="10.5" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B7z-VZ-6ZB">
+                                <rect key="frame" x="184" y="796" width="46" height="30"/>
+                                <state key="normal" title="Button"/>
+                                <connections>
+                                    <action selector="testButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="GuP-BT-loa"/>
+                                </connections>
+                            </button>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="Dr9-rV-RYd">
+                                <rect key="frame" x="188.5" y="434.5" width="37" height="37"/>
+                                <color key="color" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
                             <constraint firstItem="gm2-zZ-lxs" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="0PV-bG-nwd"/>
                             <constraint firstItem="Xca-Ch-bPe" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="1G7-sv-c6m"/>
+                            <constraint firstItem="B7z-VZ-6ZB" firstAttribute="top" secondItem="Xca-Ch-bPe" secondAttribute="bottom" constant="25.5" id="52o-Xq-qcy"/>
                             <constraint firstItem="gXi-o1-QXM" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="7UW-RZ-U0Y"/>
                             <constraint firstItem="d4U-20-WO3" firstAttribute="top" secondItem="uqX-wp-YMT" secondAttribute="bottom" constant="20" id="By0-mq-qal"/>
                             <constraint firstItem="uqX-wp-YMT" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="F7E-8x-DCw"/>
+                            <constraint firstItem="Dr9-rV-RYd" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="LR5-UL-cgA"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="gm2-zZ-lxs" secondAttribute="trailing" constant="20" id="R8D-O1-cnU"/>
                             <constraint firstItem="uqX-wp-YMT" firstAttribute="top" secondItem="gXi-o1-QXM" secondAttribute="bottom" constant="20" id="Vn3-1i-RXw"/>
+                            <constraint firstItem="Dr9-rV-RYd" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="YKw-MS-KXf"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="d4U-20-WO3" secondAttribute="trailing" constant="25" id="bc0-6U-p2G"/>
+                            <constraint firstItem="B7z-VZ-6ZB" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="jv0-XY-x8v"/>
                             <constraint firstItem="d4U-20-WO3" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="25" id="jvC-oJ-Vri"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="gm2-zZ-lxs" secondAttribute="bottom" constant="150" id="wHM-bn-aSL"/>
                             <constraint firstItem="gXi-o1-QXM" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="xbb-vq-HFL"/>
@@ -177,6 +192,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="Dr9-rV-RYd" id="rOk-nX-m90"/>
                         <outlet property="amountLabel" destination="DR7-nn-ufO" id="tOC-Ka-req"/>
                         <outlet property="tableView" destination="gm2-zZ-lxs" id="Cn5-Is-QgU"/>
                         <outlet property="testLabel" destination="Xca-Ch-bPe" id="I6A-aa-tnZ"/>

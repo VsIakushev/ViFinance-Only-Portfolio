@@ -8,7 +8,7 @@
 
 import UIKit
 
-var amountOfPortfolio = 0.0
+var PortfolioAmount = 0.0
 
 class CustomCell: UITableViewCell {
     
@@ -21,12 +21,33 @@ class CustomCell: UITableViewCell {
 }
 
 struct PortfolioModel {
+    
+    let arrayOfTickers = ["AAPL", "MSFT", "GOOG", "BRK.B"]
+    let arrayOfMarketCapAPI = [2332.0, 2033.0, 1109.0, 713.0]
+    let arrayOfPricesAPI = [153.12, 247.42, 120.57, 330.14]
+
+    var PortfolioAmountNew = 10000.0
+
+    var dictOfMarketCap = [String:Double]()
+    var dictOfShares = [String:Double]()
+    var dictOfPrices = [String:Double]()
+    var dictOfAmounts = [String:Double]()
+    var dictOfNubmerOfStocks = [String:Double]()
+
+    var summOfMarketCaps = 0
+    
+}
+
+struct PortfolioModelOld {
     var ticker : String
     var share : String
-    var amount : Double
+    var amount : String
     var price : Double
     var quantity : Int
-
+    
+    static var summOfMarketCaps = 0
+    static var arrayOfSharesNew = [0.0]
+    static var arrayOfMarketCap = [0.0]
     
     static  let arrayOfTickers = ["AAPL", "MSFT", "GOOG", "BRK.B", "META", "NVDA"]
     static var arrayOfShares = [21.15, 17.22, 11.31, 6.55, 4.35, 3.47 ]
@@ -34,17 +55,17 @@ struct PortfolioModel {
     static  let arrayOfPrices = [153.12, 247.42, 120.57, 330.14, 140.32, 160.58]
     static  let arrayOfNubmerOfStocks = [45, 22, 16, 13, 7, 6]
     
-    static func getPortfolio() -> [PortfolioModel] {
-        var Portfolio = [PortfolioModel]()
+    static func getPortfolio() -> [PortfolioModelOld] {
+        var Portfolio = [PortfolioModelOld]()
         arrayOfAmounts.removeAll()
         
         for i in 0..<arrayOfTickers.count {
-            arrayOfAmounts.append(round((Double(amountOfPortfolio) * arrayOfShares[i] / 100)*10)/10)
+            arrayOfAmounts.append(round((Double(PortfolioAmount) * arrayOfShares[i] / 100)*10)/10)
             
         }
         
         for i in 0..<arrayOfTickers.count {
-            Portfolio.append(PortfolioModel(ticker: arrayOfTickers[i], share: String(arrayOfShares[i]) + "%", amount: arrayOfAmounts[i], price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
+            Portfolio.append(PortfolioModelOld(ticker: arrayOfTickers[i], share: String(arrayOfShares[i]) + "%", amount: String(format: "%.2f", arrayOfAmounts[i]) + "$", price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
         }
         return Portfolio
     }
@@ -52,27 +73,42 @@ struct PortfolioModel {
 
 
 class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
-
+    
     
     @IBOutlet weak var amountLabel: UILabel!
     @IBOutlet weak var testLabel: UILabel!
     
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+    var testString = "0"
+    
+    
     // MARK: Editing Amount
+    // возможно нужно будет добавить [unowned self] перед клоужером, когда его создам
+    
+    @IBAction func testButton(_ sender: UIButton) {
+        print("Total market cap: \(PortfolioModelOld.summOfMarketCaps)")
+        print("Array of market cap: \(PortfolioModelOld.arrayOfMarketCap)")
+        print("Array of shares: \(PortfolioModelOld.arrayOfSharesNew)")
+        
+    }
+    
+    
     @IBAction func editPortfolioAmount(_ sender: UIButton) {
         let alertController = UIAlertController(title: "Edit Portfolio Amount", message: "Enter your Portfolio amount", preferredStyle: .alert)
         let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
             let tf = alertController.textFields?.first
             if let newPortfolioAmount = tf?.text {
-               
-                amountOfPortfolio = Double(newPortfolioAmount) ?? 0.0
-                if amountOfPortfolio == Double(newPortfolioAmount) {
-                    UserSettings.portfolioAmount = amountOfPortfolio
+                
+                PortfolioAmount = Double(newPortfolioAmount) ?? 0.0
+                if PortfolioAmount == Double(newPortfolioAmount) {
+                    UserSettings.portfolioAmount = PortfolioAmount
                     self.amountLabel.text = newPortfolioAmount
-                    self.stocksInPortfolio = PortfolioModel.getPortfolio()
+                    self.stocksInPortfolio = PortfolioModelOld.getPortfolio()
                     self.tableView.reloadData()
                 } else {
                     self.amountLabel.text = "Bad value!"
-                    self.stocksInPortfolio = PortfolioModel.getPortfolio()
+                    self.stocksInPortfolio = PortfolioModelOld.getPortfolio()
                     self.tableView.reloadData()
                     
                     let alert = UIAlertController(title: "Wrong format!", message: "Enter your portfolio amount", preferredStyle: .alert)
@@ -92,7 +128,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         
         present(alertController, animated: true, completion: nil)
         
-//        UserSettings.portfolioAmount = amountOfPortfolio
+        //        UserSettings.portfolioAmount = amountOfPortfolio
         
     }
     
@@ -111,39 +147,37 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         self.view.endEditing(true)
     } // скрытие клавиатуры после ввода по тапу на пустое поле
     
-    var stocksInPortfolio = PortfolioModel.getPortfolio()
+    var stocksInPortfolio = PortfolioModelOld.getPortfolio()
     
     // MARK : viewDidLoad
     
     let networkStockInfoManager = NetworkStockManager()
     
-//    override func viewWillAppear(_ animated: Bool) {
-//    super.viewWillAppear(animated)
-//        amountOfPortfolio = UserSettings.portfolioAmount
-//    }
+    //    override func viewWillAppear(_ animated: Bool) {
+    //    super.viewWillAppear(animated)
+    //        amountOfPortfolio = UserSettings.portfolioAmount
+    //    }
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //тест получения данных об акции с помощью API
-        networkStockInfoManager.fetchStockMarketCapitalization(forCompany: "AAPL") { currentStockMarketCap in
-            
+        Timer.scheduledTimer(withTimeInterval: 3, repeats: false) {_ in
+            self.activityIndicator.isHidden = true
         }
-        networkStockInfoManager.fetchStockPrice(forCompany: "AAPL")
         
+        totalMarketCapCalculation()
+        stockSharesCalculation()
         
-                
+    
         // Загрузка суммы портфеля
-        amountOfPortfolio = UserSettings.portfolioAmount
-        amountLabel.text = String(amountOfPortfolio)
+        PortfolioAmount = UserSettings.portfolioAmount
+        amountLabel.text = String(PortfolioAmount)
         
-        self.stocksInPortfolio = PortfolioModel.getPortfolio()
+        self.stocksInPortfolio = PortfolioModelOld.getPortfolio()
         self.tableView.reloadData()
         // обновление таблицы при загрузке, чтобы сразу были видны значения
         
-        
-    // Добавляю свайп, по которому убирается клавиатура
+        // Добавляю свайп, по которому убирается клавиатура
         let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(self.hideKeyboardOnSwipeDown))
         swipeDown.delegate = self
         swipeDown.direction =  UISwipeGestureRecognizer.Direction.down
@@ -151,49 +185,54 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         
         
         tableView.tableFooterView = UIView() //скрыл разлиновку таблицы ниже, последнего элемента портфеля.
+        
     }
     
-    
-    
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    func updateInterface(marketCap: CurrentStockMarketCap){
+        DispatchQueue.main.async {
+            self.testLabel.text = marketCap.marketCapString
+            self.testString = marketCap.marketCapString
+            print(self.testString)
+        }
+        
     }
-    */
     
-//    @IBAction func calculatePressed(_ sender: UIButton) {
-//
-//        if let _ = Int(amountTextField.text!) {
-//            amountLabel.text = amountTextField.text ?? String(0)
-//            amountOfPortfolio = Int(amountLabel.text!)!
-//
-//            stocksInPortfolio = PortfolioModel.getPortfolio()
-//            tableView.reloadData()
-//            // обновление таблицы после нажатия кнопки
-//        } else {
-//            let alert = UIAlertController(title: "Wrong format!", message: "Enter your portfolio amount", preferredStyle: .alert)
-//            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-//            alert.addAction(okAction)
-//            present(alert, animated: true, completion: nil)
-//            print("Wrong amount format!")
-//        }
-//    }
+    func totalMarketCapCalculation(){
+        PortfolioModelOld.summOfMarketCaps = 0
+        PortfolioModelOld.arrayOfMarketCap.removeAll()
+        for company in PortfolioModelOld.arrayOfTickers {
+            networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company) {  currentStockMarketCap in
+                PortfolioModelOld.summOfMarketCaps += currentStockMarketCap.marketCapInt
+                PortfolioModelOld.arrayOfMarketCap.append(currentStockMarketCap.marketCap)
+                //+= marketCap.marketCapInt
+            }
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            print("Sum of Market Cap after Delay is : \(PortfolioModelOld.summOfMarketCaps)")
+            
+        }
+    }
     
-    
+    func stockSharesCalculation() {
+        PortfolioModelOld.arrayOfSharesNew.removeAll()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            for i in 0..<PortfolioModelOld.arrayOfMarketCap.count {
+                
+                let stockShare = (PortfolioModelOld.arrayOfMarketCap[i] / Double(PortfolioModelOld.summOfMarketCaps))
+                PortfolioModelOld.arrayOfSharesNew.append(stockShare)
+            }
+        }
+        print(PortfolioModelOld.arrayOfSharesNew)
+    }
 }
+
 
 extension PortfoliosViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return stocksInPortfolio.count
-        
-    
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -205,49 +244,5 @@ extension PortfoliosViewController: UITableViewDelegate, UITableViewDataSource {
         cell.QuantityLabel.text = String(stocksInPortfolio[indexPath.row].quantity)
         
         return cell
-        
-    }
-    
-    
-}
-
-
-// This extension turns on ability to add "Done" Button to NumPad-keyboard (in Attributes Inspector)
-// Have to find out how to make connection between Done-button and calculations in class.
-
-extension UITextField{
-    @IBInspectable var doneAccessory: Bool{
-        get{
-            return self.doneAccessory
-        }
-        set (hasDone) {
-            if hasDone{
-                addDoneButtonOnKeyboard()
-            }
-        }
-    }
-
-    func addDoneButtonOnKeyboard()
-    {
-        let doneToolbar: UIToolbar = UIToolbar(frame: CGRect.init(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
-        doneToolbar.barStyle = .default
-
-        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let done: UIBarButtonItem = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(self.doneButtonAction))
-
-        let items = [flexSpace, done]
-        doneToolbar.items = items
-        doneToolbar.sizeToFit()
-
-        self.inputAccessoryView = doneToolbar
-    }
-
-    @objc func doneButtonAction() {
-        
-        print("Done button action works")
-        
-        self.resignFirstResponder()
-        
     }
 }
-
