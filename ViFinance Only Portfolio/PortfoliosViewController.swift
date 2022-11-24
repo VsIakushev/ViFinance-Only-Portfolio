@@ -22,19 +22,111 @@ class CustomCell: UITableViewCell {
 
 struct PortfolioModel {
     
-    let arrayOfTickers = ["AAPL", "MSFT", "GOOG", "BRK.B"]
-    let arrayOfMarketCapAPI = [2332.0, 2033.0, 1109.0, 713.0]
-    let arrayOfPricesAPI = [153.12, 247.42, 120.57, 330.14]
+    var ticker : String
+    var share : String
+    var amount : String
+    var price : Double
+    var quantity : Int
+    
+    static var summOfMarketCaps = 0
+//    static var arrayOfSharesNew = [0.0]
+//    static var arrayOfMarketCap = [0.0]
+    
+    static let arrayOfTickers = ["AAPL", "MSFT", "GOOG", "BRK.B"]
+//    static let arrayOfMarketCapAPI = [2332.0, 2033.0, 1109.0, 713.0] // TODO: АвтоЗаполение
+//    static let arrayOfPricesAPI = [153.12, 247.42, 120.57, 330.14] // TODO: АвтоЗаполение
 
-    var PortfolioAmountNew = 10000.0
+//    static var PortfolioAmountNew = 10000.0
 
-    var dictOfMarketCap = [String:Double]()
-    var dictOfShares = [String:Double]()
-    var dictOfPrices = [String:Double]()
-    var dictOfAmounts = [String:Double]()
-    var dictOfNubmerOfStocks = [String:Double]()
+    static var dictOfMarketCap = [String:Double]()
+    static var dictOfShares = [String:Double]()
+    static var dictOfPrices = [String:Double]()
+    static var dictOfAmounts = [String:Double]()
+    static var dictOfNubmerOfStocks = [String:Double]()
 
-    var summOfMarketCaps = 0
+    
+    // TODO: - Перенести функции сюда из PortfolioModelOld, а так же добавить остальные функции автоматического расчета из Playground
+    
+    // Функция 1: Считаем сумму капитализации всех компаний и наполнение dictOfMarketCap
+    static func totalMarketCapCalculationAndDictOfMarketCapFiling(){
+        // делаю в одной функции, чтобы не дублировать запрос к API
+        PortfolioModel.summOfMarketCaps = 0
+//        PortfolioModel.dictOfMarketCap.removeAll()
+        for i in 0..<PortfolioModel.arrayOfTickers.count {
+            networkStockInfoManager.fetchStockMarketCapitalization(forCompany: arrayOfTickers[i]) {  currentStockMarketCap in
+                PortfolioModel.summOfMarketCaps += currentStockMarketCap.marketCapInt
+                PortfolioModel.dictOfMarketCap[arrayOfTickers[i]] = currentStockMarketCap.marketCap
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            print("Sum of Market Cap after Delay is : \(PortfolioModel.summOfMarketCaps)")
+        }
+    }
+    
+    // Функция 2: // наполнение dictOfPrices
+    static func stockPricesDictionaryFilling() {
+//        PortfolioModel.dictOfPrices.removeAll()
+        for i in 0..<arrayOfTickers.count {
+            networkStockInfoManager.fetchStockPrice(forCompany: arrayOfTickers[i]) { currentStockPrice in
+                PortfolioModel.dictOfPrices[arrayOfTickers[i]] = currentStockPrice.price
+            }
+        }
+        
+    }
+    
+    // Функция 3: наполнение dictOfShares
+    static func stockSharesDictionaryFilling() {
+//        PortfolioModel.dictOfShares.removeAll()
+        // Задержка 3 сек, чтобы успеть получить данные (API)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            for i in 0..<dictOfMarketCap.count {
+                if let value = dictOfMarketCap[arrayOfTickers[i]] {
+                    dictOfShares[arrayOfTickers[i]] = round(Double(value / Double( summOfMarketCaps))*10000)/10000
+                }
+            }
+            
+        }
+    }
+    
+     // Функция 4: наполнение dictOfAmounts
+    static func dictOfAmountsFilling() {
+        //PortfolioModel.dictOfAmounts.removeAll()
+        // Задержка 3 сек, чтобы успеть получить данные (API)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            for i in 0..<dictOfShares.count {
+                if let value = dictOfShares[arrayOfTickers[i]] {
+                    dictOfAmounts[arrayOfTickers[i]] = value*PortfolioAmount
+                }
+            }
+        }
+    }
+    
+     // Функция 5: наполнение dictOfNumberOfStocks
+    static func dictOfNumberOfStocksFilling() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            // PortfolioModel.dictOfNubmerOfStocks.removeAll()
+            // Задержка 3 сек, чтобы успеть получить данные (API)
+            for i in 0..<dictOfAmounts.count {
+                if let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]] {
+                dictOfNubmerOfStocks[arrayOfTickers[i]] = round(( valueAmount / valuePrice )*1)/1
+                // добавил 1/1 для целых акций, чтобы потом сделать 10/10 для дополнительного функционала с дробными акциями.
+                }
+            }
+        }
+    }
+
+    // Функция 6: Составление портфеля
+    static func getPortfolio() -> [PortfolioModel] {
+        var portfolio = [PortfolioModel]()
+        for i in 0..<arrayOfTickers.count {
+            if let valueShare = dictOfShares[arrayOfTickers[i]], let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]], let valueNumberOfStocks = dictOfNubmerOfStocks[arrayOfTickers[i]] {
+                portfolio.append(PortfolioModel(ticker: arrayOfTickers[i], share: String(valueShare*100) + "%", amount: String(format: "%.2f", valueAmount) + "$", price: valuePrice, quantity: Int(valueNumberOfStocks)))
+            }
+            
+        }
+        return portfolio
+    }
+    
     
 }
 
@@ -44,26 +136,57 @@ struct PortfolioModelOld {
     var amount : String
     var price : Double
     var quantity : Int
-    
+
     static var summOfMarketCaps = 0
     static var arrayOfSharesNew = [0.0]
     static var arrayOfMarketCap = [0.0]
-    
+
     static  let arrayOfTickers = ["AAPL", "MSFT", "GOOG", "BRK.B", "META", "NVDA"]
     static var arrayOfShares = [21.15, 17.22, 11.31, 6.55, 4.35, 3.47 ]
     static var arrayOfAmounts = [0.0]
     static  let arrayOfPrices = [153.12, 247.42, 120.57, 330.14, 140.32, 160.58]
     static  let arrayOfNubmerOfStocks = [45, 22, 16, 13, 7, 6]
-    
+
+    static func totalMarketCapCalculation(){
+        PortfolioModelOld.summOfMarketCaps = 0
+        PortfolioModelOld.arrayOfMarketCap.removeAll()
+        for company in PortfolioModelOld.arrayOfTickers {
+            networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company) {  currentStockMarketCap in
+                PortfolioModelOld.summOfMarketCaps += currentStockMarketCap.marketCapInt
+                PortfolioModelOld.arrayOfMarketCap.append(currentStockMarketCap.marketCap)
+                //+= marketCap.marketCapInt
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            print("Sum of Market Cap after Delay is : \(PortfolioModelOld.summOfMarketCaps)")
+
+        }
+    }
+
+    static func stockSharesCalculation() {
+        PortfolioModelOld.arrayOfSharesNew.removeAll()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            for i in 0..<PortfolioModelOld.arrayOfMarketCap.count {
+
+                let stockShare = (PortfolioModelOld.arrayOfMarketCap[i] / Double(PortfolioModelOld.summOfMarketCaps))
+                PortfolioModelOld.arrayOfSharesNew.append(stockShare)
+            }
+        }
+        print(PortfolioModelOld.arrayOfSharesNew)
+    }
+
+
     static func getPortfolio() -> [PortfolioModelOld] {
         var Portfolio = [PortfolioModelOld]()
         arrayOfAmounts.removeAll()
-        
+
         for i in 0..<arrayOfTickers.count {
             arrayOfAmounts.append(round((Double(PortfolioAmount) * arrayOfShares[i] / 100)*10)/10)
-            
+
         }
-        
+
         for i in 0..<arrayOfTickers.count {
             Portfolio.append(PortfolioModelOld(ticker: arrayOfTickers[i], share: String(arrayOfShares[i]) + "%", amount: String(format: "%.2f", arrayOfAmounts[i]) + "$", price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
         }
@@ -87,8 +210,8 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     // возможно нужно будет добавить [unowned self] перед клоужером, когда его создам
     
     @IBAction func testButton(_ sender: UIButton) {
-        print("Total market cap: \(PortfolioModelOld.summOfMarketCaps)")
-        print("Array of market cap: \(PortfolioModelOld.arrayOfMarketCap)")
+        print("Total market cap: \(PortfolioModel.summOfMarketCaps)")
+        print("Dict of market cap: \(PortfolioModel.dictOfMarketCap)")
         print("Array of shares: \(PortfolioModelOld.arrayOfSharesNew)")
         
     }
@@ -161,12 +284,15 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) {_ in
             self.activityIndicator.isHidden = true
         }
+        PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFiling()
+        PortfolioModelOld.stockSharesCalculation()
         
-        totalMarketCapCalculation()
-        stockSharesCalculation()
+//        totalMarketCapCalculation()
+//        stockSharesCalculation()
         
     
         // Загрузка суммы портфеля
@@ -197,22 +323,23 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         
     }
     
-    func totalMarketCapCalculation(){
-        PortfolioModelOld.summOfMarketCaps = 0
-        PortfolioModelOld.arrayOfMarketCap.removeAll()
-        for company in PortfolioModelOld.arrayOfTickers {
-            networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company) {  currentStockMarketCap in
-                PortfolioModelOld.summOfMarketCaps += currentStockMarketCap.marketCapInt
-                PortfolioModelOld.arrayOfMarketCap.append(currentStockMarketCap.marketCap)
-                //+= marketCap.marketCapInt
-            }
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            print("Sum of Market Cap after Delay is : \(PortfolioModelOld.summOfMarketCaps)")
-            
-        }
-    }
+//    TODO: дублирую в структуру, потом удалить
+//    func totalMarketCapCalculation(){
+//        PortfolioModelOld.summOfMarketCaps = 0
+//        PortfolioModelOld.arrayOfMarketCap.removeAll()
+//        for company in PortfolioModelOld.arrayOfTickers {
+//            networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company) {  currentStockMarketCap in
+//                PortfolioModelOld.summOfMarketCaps += currentStockMarketCap.marketCapInt
+//                PortfolioModelOld.arrayOfMarketCap.append(currentStockMarketCap.marketCap)
+//                //+= marketCap.marketCapInt
+//            }
+//        }
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+//            print("Sum of Market Cap after Delay is : \(PortfolioModelOld.summOfMarketCaps)")
+//
+//        }
+//    }
     
     func stockSharesCalculation() {
         PortfolioModelOld.arrayOfSharesNew.removeAll()

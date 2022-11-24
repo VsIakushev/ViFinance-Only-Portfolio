@@ -9,13 +9,16 @@
 import Foundation
 
 class NetworkStockManager {
-    func fetchStockPrice(forCompany ticker: String) {
+    
+    func fetchStockPrice(forCompany ticker: String, completionHandler: @escaping (CurrentStockPrice) -> Void) {
         let urlString = "https://financialmodelingprep.com/api/v3/quote-short/\(ticker)?apikey=\(apiKeyfinancialmodelingprep)"
         guard let url = URL(string: urlString) else { return }
         let session = URLSession(configuration: .default)
         let task = session.dataTask(with: url) { data, response, error in
             if let data = data {
-             let currentStockPrice = self.parsePriceJSON(withData: data)
+                if let currentStockPrice = self.parsePriceJSON(withData: data) {
+                    completionHandler(currentStockPrice)
+                }
             }
         }
         task.resume()
@@ -36,13 +39,16 @@ class NetworkStockManager {
         task.resume()
     }
     
-    func parsePriceJSON(withData data: Data) {
+    func parsePriceJSON(withData data: Data) -> CurrentStockPrice? {
         let decoder = JSONDecoder()
         do {
             let currentStockPriceData = try decoder.decode(CurrentStockPriceData.self, from: data)
-//            print(currentStockPriceData.first!.price)
+            guard let currentStockprice = CurrentStockPrice(currentStockPriceData: currentStockPriceData) else { return nil }
+            print(currentStockPriceData.first!.price)
+            return currentStockprice
         } catch let error as NSError {
             print(error)
+            return nil
         }
     }
     
@@ -51,14 +57,12 @@ class NetworkStockManager {
         do {
             let currentStockMarketCapData = try decoder.decode(CurrentStockMarketCapData.self, from: data)
             guard let currentStockMarketCap = CurrentStockMarketCap(currentStockMarketCapData: currentStockMarketCapData) else { return nil }
-            
-            print(currentStockMarketCapData.first!.marketCap)
+            //            print(currentStockMarketCapData.first!.marketCap)
             return currentStockMarketCap
             
         } catch let error as NSError {
             print(error)
             return nil
-            
         }
     }
 }

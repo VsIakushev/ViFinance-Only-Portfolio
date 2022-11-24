@@ -21,6 +21,7 @@
 		5764CA26292631DA005D92A1 /* CurrentStockMarketCapData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5764CA25292631DA005D92A1 /* CurrentStockMarketCapData.swift */; };
 		5764CA2A29294BF2005D92A1 /* CurrentPortfolio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5764CA2929294BF2005D92A1 /* CurrentPortfolio.swift */; };
 		5764CA2C292CF497005D92A1 /* CurrentStockMarketCap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5764CA2B292CF497005D92A1 /* CurrentStockMarketCap.swift */; };
+		5764CA2E292F7EE1005D92A1 /* CurrentStockPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5764CA2D292F7EE0005D92A1 /* CurrentStockPrice.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		5764CA25292631DA005D92A1 /* CurrentStockMarketCapData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentStockMarketCapData.swift; sourceTree = "<group>"; };
 		5764CA2929294BF2005D92A1 /* CurrentPortfolio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentPortfolio.swift; sourceTree = "<group>"; };
 		5764CA2B292CF497005D92A1 /* CurrentStockMarketCap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentStockMarketCap.swift; sourceTree = "<group>"; };
+		5764CA2D292F7EE0005D92A1 /* CurrentStockPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentStockPrice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +92,7 @@
 				5764C9FC29253B1E005D92A1 /* NetworkStockManager.swift */,
 				5764CA23292630FF005D92A1 /* CurrentStockPriceData.swift */,
 				5764CA25292631DA005D92A1 /* CurrentStockMarketCapData.swift */,
+				5764CA2D292F7EE0005D92A1 /* CurrentStockPrice.swift */,
 				5764CA2B292CF497005D92A1 /* CurrentStockMarketCap.swift */,
 				5764CA2929294BF2005D92A1 /* CurrentPortfolio.swift */,
 			);
@@ -210,6 +213,7 @@
 				5764CA2A29294BF2005D92A1 /* CurrentPortfolio.swift in Sources */,
 				5764C9FD29253B1E005D92A1 /* NetworkStockManager.swift in Sources */,
 				5764CA26292631DA005D92A1 /* CurrentStockMarketCapData.swift in Sources */,
+				5764CA2E292F7EE1005D92A1 /* CurrentStockPrice.swift in Sources */,
 				575FADF528FE9E36007A4B84 /* ViFinance Only Portfolio.xcdatamodeld in Sources */,
 				575FADDA28FC8F2E007A4B84 /* SceneDelegate.swift in Sources */,
 				5764C9FB29253A55005D92A1 /* Constants.swift in Sources */,

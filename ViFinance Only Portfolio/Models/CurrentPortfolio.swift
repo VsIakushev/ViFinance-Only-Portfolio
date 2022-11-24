@@ -30,6 +30,9 @@ struct PortfolioModelTest {
 // MarketCap обновляется только при изменении суммы портфеля вручную, чтобы расчитать пропорции. При обновлении при открытии (во viewDidLoad) подгружать только цену, и умножать на прежнее количество акций(сохраненное в userDefaults) = получим Portfolio amount
 // Добавить ActivityIndicator в момент первой загрузки, и при обновлении PortfolioAmount
 
+/// TODO : Попробовать убрать removeAll из функций наполнения словарей. Чтобы если вдргу в какой-то момент не будет связи - обработка построения портфеля шла по старым данным.
+
+
 
 struct CompanyInfo {
     var ticker : String
@@ -93,17 +96,7 @@ struct PortfolioModelTestNew {
 //
 //    }
     
-    func calculateShares() {
-        var markerCapSumm = 0
-        
-        
-        
-//        for company in staticArrayOfTickers {
-//            let currentStockMarketCap =  networkStockInfoManager.fetchStockMarketCapitalization(forCompany: company) { currentStockMarketCap in
-//                currentStockMarketCap.marketCap
-//            }
-//        }
-    }
+
     
     
     
