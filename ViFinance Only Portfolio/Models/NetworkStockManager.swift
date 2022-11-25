@@ -57,7 +57,7 @@ class NetworkStockManager {
         do {
             let currentStockMarketCapData = try decoder.decode(CurrentStockMarketCapData.self, from: data)
             guard let currentStockMarketCap = CurrentStockMarketCap(currentStockMarketCapData: currentStockMarketCapData) else { return nil }
-            //            print(currentStockMarketCapData.first!.marketCap)
+            print(currentStockMarketCapData.first!.marketCap)
             return currentStockMarketCap
             
         } catch let error as NSError {
