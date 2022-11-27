@@ -9,31 +9,36 @@
 import Foundation
 
 class NetworkStockManager {
+    private let session: URLSession = .shared
     
-    func fetchStockPrice(forCompany ticker: String, completionHandler: @escaping (CurrentStockPrice) -> Void) {
+    func fetchStockPrice(forCompany ticker: String, completionHandler: @escaping (Result<CurrentStockPrice, Error>) -> Void) {
         let urlString = "https://financialmodelingprep.com/api/v3/quote-short/\(ticker)?apikey=\(apiKeyfinancialmodelingprep)"
         guard let url = URL(string: urlString) else { return }
-        let session = URLSession(configuration: .default)
+        
         let task = session.dataTask(with: url) { data, response, error in
-            if let data = data {
-                if let currentStockPrice = self.parsePriceJSON(withData: data) {
-                    completionHandler(currentStockPrice)
-                }
+            if let data = data, let currentStockPrice = self.parsePriceJSON(withData: data) {
+                completionHandler(.success(currentStockPrice))
+            } else if let error = error {
+                completionHandler(.failure(error))
+            } else {
+                fatalError()
             }
         }
         task.resume()
     }
     
     //
-    func fetchStockMarketCapitalization(forCompany ticker: String, completionHandler: @escaping (CurrentStockMarketCap) -> Void) {
+    func fetchStockMarketCapitalization(forCompany ticker: String, completionHandler: @escaping (Result<CurrentStockMarketCap, Error>) -> Void) {
         let urlString = "https://financialmodelingprep.com/api/v3/market-capitalization/\(ticker)?apikey=\(apiKeyfinancialmodelingprep)"
         guard let url = URL(string: urlString) else { return }
-        let session = URLSession(configuration: .default)
+        
         let task = session.dataTask(with: url) { data, response, error in
-            if let data = data {
-                if let currentStockMarketCap = self.parseMarketCapJSON(withData: data) {
-                    completionHandler(currentStockMarketCap)
-                }
+            if let data = data, let currentStockMarketCap = self.parseMarketCapJSON(withData: data) {
+                completionHandler(.success(currentStockMarketCap))
+            } else if let error = error {
+                completionHandler(.failure(error))
+            } else {
+                fatalError()
             }
         }
         task.resume()
@@ -46,7 +51,7 @@ class NetworkStockManager {
             guard let currentStockprice = CurrentStockPrice(currentStockPriceData: currentStockPriceData) else { return nil }
             print(currentStockPriceData.first!.price)
             return currentStockprice
-        } catch let error as NSError {
+        } catch {
             print(error)
             return nil
         }
@@ -60,7 +65,7 @@ class NetworkStockManager {
             print(currentStockMarketCapData.first!.marketCap)
             return currentStockMarketCap
             
-        } catch let error as NSError {
+        } catch {
             print(error)
             return nil
         }

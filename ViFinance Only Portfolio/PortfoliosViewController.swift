@@ -20,6 +20,10 @@ class CustomCell: UITableViewCell {
     
 }
 
+struct PortfolioFetchError: Error {
+    var errors: [Error]
+}
+
 struct PortfolioModel {
     
     var ticker : String
@@ -27,6 +31,7 @@ struct PortfolioModel {
     var amount : String
     var price : Double
     var quantity : Int
+    
     
     static let arrayOfTickers = ["AAPL", "MSFT", "GOOG"]
     // ["AAPL", "MSFT", "GOOG", "BRK.B", "JNJ", "V", "NVDA", "JPM", "MA", "META", "WFC", "DIS", "TXN", "SCHW", "ADBE", "SPGI", "AXP", "BLK", "INTU", "PYPL"]
@@ -38,34 +43,75 @@ struct PortfolioModel {
     static var dictOfAmounts = [String:Double]()
     static var dictOfNubmerOfStocks = [String:Double]()
     
+    static var syncQueue: DispatchQueue = .init(label: "sync", qos: .background, attributes: .concurrent)
+    
     // Функция 1: Считаем сумму капитализации всех компаний и наполнение dictOfMarketCap
-    static func totalMarketCapCalculationAndDictOfMarketCapFilingAPI(){
+    static func totalMarketCapCalculationAndDictOfMarketCapFilingAPI(completion: @escaping (Result<Void, PortfolioFetchError>) -> Void){
         // делаю в одной функции, чтобы не дублировать запрос к API
         PortfolioModel.summOfMarketCaps = 0
-        for i in 0..<PortfolioModel.arrayOfTickers.count {
-            networkStockInfoManager.fetchStockMarketCapitalization(forCompany: arrayOfTickers[i]) {  currentStockMarketCap in
-                PortfolioModel.summOfMarketCaps += currentStockMarketCap.marketCapInt
-                PortfolioModel.dictOfMarketCap[arrayOfTickers[i]] = currentStockMarketCap.marketCap
+        var errors: [Error] = []
+        
+        let group = DispatchGroup()
+        
+        for ticker in PortfolioModel.arrayOfTickers {
+            group.enter()
+            networkStockInfoManager.fetchStockMarketCapitalization(forCompany: ticker) { currentStockMarketCap in
+                syncQueue.async(flags: .barrier) {
+                    switch currentStockMarketCap {
+                    case let .success(cap):
+                        PortfolioModel.summOfMarketCaps += cap.marketCapInt
+                        PortfolioModel.dictOfMarketCap[ticker] = cap.marketCap
+                    case let .failure(error):
+                        errors.append(error)
+                    }
+                    
+                    group.leave()
+                }
             }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        
+        group.notify(queue: .main) {
             print("Sum of Market Cap after Delay is : \(PortfolioModel.summOfMarketCaps)")
+            if errors.isEmpty {
+                completion(.success(()))
+            } else {
+                completion(.failure(PortfolioFetchError(errors: errors)))
+            }
         }
     }
     
     // Функция 2: // наполнение dictOfPrices
-    static func stockPricesDictionaryFillingAPI() {
-        for i in 0..<arrayOfTickers.count {
-            networkStockInfoManager.fetchStockPrice(forCompany: arrayOfTickers[i]) { currentStockPrice in
-                PortfolioModel.dictOfPrices[arrayOfTickers[i]] = currentStockPrice.price
+    static func stockPricesDictionaryFillingAPI(completion: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
+        let group = DispatchGroup()
+        var errors: [Error] = []
+        
+        for ticker in arrayOfTickers {
+            group.enter()
+            networkStockInfoManager.fetchStockPrice(forCompany: ticker) { currentStockPrice in
+                syncQueue.async(flags: .barrier) {
+                    switch currentStockPrice {
+                    case let .success(price):
+                        PortfolioModel.dictOfPrices[ticker] = price.price
+                    case let .failure(error):
+                        errors.append(error)
+                    }
+                    
+                    group.leave()
+                }
+            }
+        }
+        group.notify(queue: .main) {
+            if errors.isEmpty {
+                completion(.success(()))
+            } else {
+                completion(.failure(.init(errors: errors)))
             }
         }
     }
     
     // Функция 3: наполнение dictOfShares
     static func stockSharesDictionaryFilling() {
-        // Задержка 3 сек, чтобы успеть получить данные (API)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        syncQueue.sync(flags: .barrier) {
             for i in 0..<dictOfMarketCap.count {
                 if let value = dictOfMarketCap[arrayOfTickers[i]] {
                     dictOfShares[arrayOfTickers[i]] = round(Double(value / Double( summOfMarketCaps))*10000)/10000
@@ -76,8 +122,7 @@ struct PortfolioModel {
     
      // Функция 4: наполнение dictOfAmounts
     static func dictOfAmountsFilling() {
-        // Задержка 3 сек, чтобы успеть получить данные (API)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        syncQueue.sync(flags: .barrier) {
             for i in 0..<dictOfShares.count {
                 if let value = dictOfShares[arrayOfTickers[i]] {
                     dictOfAmounts[arrayOfTickers[i]] = value*PortfolioAmount
@@ -88,7 +133,7 @@ struct PortfolioModel {
     
      // Функция 5: наполнение dictOfNumberOfStocks
     static func dictOfNumberOfStocksFilling() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        syncQueue.sync(flags: .barrier) {
             // Задержка 3 сек, чтобы успеть получить данные (API)
             for i in 0..<dictOfAmounts.count {
                 if let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]] {
@@ -102,9 +147,20 @@ struct PortfolioModel {
     // Функция 6: Составление портфеля
     static func getPortfolio() -> [PortfolioModel] {
         var portfolio = [PortfolioModel]()
-        for i in 0..<arrayOfTickers.count {
-            if let valueShare = dictOfShares[arrayOfTickers[i]], let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]], let valueNumberOfStocks = dictOfNubmerOfStocks[arrayOfTickers[i]] {
-                portfolio.append(PortfolioModel(ticker: arrayOfTickers[i], share: String(format: "%.2f", valueShare*100) + "%", amount: String(format: "%.2f", valueAmount) + "$", price: valuePrice, quantity: Int(valueNumberOfStocks)))
+        for ticker in arrayOfTickers {
+            if
+                let valueShare = dictOfShares[ticker],
+                let valueAmount = dictOfAmounts[ticker],
+                let valuePrice = dictOfPrices[ticker],
+                let valueNumberOfStocks = dictOfNubmerOfStocks[ticker]
+            {
+                portfolio.append(PortfolioModel(
+                    ticker: ticker,
+                    share: String(format: "%.2f", valueShare*100) + "%",
+                    amount: String(format: "%.2f", valueAmount) + "$",
+                    price: valuePrice,
+                    quantity: Int(valueNumberOfStocks)
+                ))
             }
         }
         return portfolio
@@ -124,10 +180,24 @@ struct PortfolioModel {
         }
     }
     
-    func getMarketCapAndPriceDataAPIandFillAllDictionaries(using completionHandler: (Bool) -> Void) {
-        PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
-        PortfolioModel.stockPricesDictionaryFillingAPI()
-        completionHandler(true)
+    static func getMarketCapAndPriceDataAPIandFillAllDictionaries(using completionHandler: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
+        totalMarketCapCalculationAndDictOfMarketCapFilingAPI { marketCapResult in
+            stockPricesDictionaryFillingAPI { pricesResult in
+                var errors: [Error] = []
+                if case let .failure(error) = marketCapResult {
+                    errors.append(contentsOf: error.errors)
+                }
+                if case let .failure(error) = pricesResult {
+                    errors.append(contentsOf: error.errors)
+                }
+                if errors.isEmpty {
+                    completionHandler(.success(()))
+                } else {
+                    completionHandler(.failure(.init(errors: errors)))
+                }
+            }
+        }
+        
     }
     
 }
@@ -169,61 +239,61 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     // MARK: Editing Amount
     // возможно нужно будет добавить [unowned self] перед клоужером, когда его создам
     
-    @IBAction func editPortfolioAmount(_ sender: UIButton) {
-        let alertController = UIAlertController(title: "Edit Portfolio Amount", message: "Enter your Portfolio amount", preferredStyle: .alert)
-        let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
-            let tf = alertController.textFields?.first
-            if let newPortfolioAmount = tf?.text {
-                
-                PortfolioAmount = Double(newPortfolioAmount) ?? 0.0
-                if PortfolioAmount == Double(newPortfolioAmount) {
-                    UserSettings.portfolioAmount = PortfolioAmount
-                    self.amountLabel.text = newPortfolioAmount
-                    
-                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
-                    PortfolioModel.stockPricesDictionaryFillingAPI()
-                    PortfolioModel.stockSharesDictionaryFilling()
-                    PortfolioModel.dictOfAmountsFilling()
-                    PortfolioModel.dictOfNumberOfStocksFilling()
-                    
-                    self.activityIndicator.isHidden = false
-                    Timer.scheduledTimer(withTimeInterval: 3, repeats: false) {_ in
-                        self.activityIndicator.isHidden = true
-                    }
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                        self.stocksInPortfolio = PortfolioModel.getPortfolio()
-                        self.tableView.reloadData()
-                    }
-                } else {
-                    self.amountLabel.text = "Bad value!"
-                    
-                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
-                    PortfolioModel.stockPricesDictionaryFillingAPI()
-                    PortfolioModel.stockSharesDictionaryFilling()
-                    PortfolioModel.dictOfAmountsFilling()
-                    PortfolioModel.dictOfNumberOfStocksFilling()
-                    
-                    self.stocksInPortfolio = PortfolioModel.getPortfolio()
-                    self.tableView.reloadData()
-                    
-                    let alert = UIAlertController(title: "Wrong format!", message: "Enter your portfolio amount", preferredStyle: .alert)
-                    let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-                    alert.addAction(okAction)
-                    self.present(alert, animated: true, completion: nil)
-                }
-            }
-        }
-        alertController.addTextField { _ in }
-        alertController.textFields?.first?.keyboardType = .decimalPad
-    
-        let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
-        
-        alertController.addAction(cancelAction)
-        alertController.addAction(saveAction)
-        
-        present(alertController, animated: true, completion: nil)
-    }
+//    @IBAction func editPortfolioAmount(_ sender: UIButton) {
+//        let alertController = UIAlertController(title: "Edit Portfolio Amount", message: "Enter your Portfolio amount", preferredStyle: .alert)
+//        let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
+//            let tf = alertController.textFields?.first
+//            if let newPortfolioAmount = tf?.text {
+//
+//                PortfolioAmount = Double(newPortfolioAmount) ?? 0.0
+//                if PortfolioAmount == Double(newPortfolioAmount) {
+//                    UserSettings.portfolioAmount = PortfolioAmount
+//                    self.amountLabel.text = newPortfolioAmount
+//
+//                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
+//                    PortfolioModel.stockPricesDictionaryFillingAPI()
+//                    PortfolioModel.stockSharesDictionaryFilling()
+//                    PortfolioModel.dictOfAmountsFilling()
+//                    PortfolioModel.dictOfNumberOfStocksFilling()
+//
+//                    self.activityIndicator.isHidden = false
+//                    Timer.scheduledTimer(withTimeInterval: 3, repeats: false) {_ in
+//                        self.activityIndicator.isHidden = true
+//                    }
+//
+//                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+//                        self.stocksInPortfolio = PortfolioModel.getPortfolio()
+//                        self.tableView.reloadData()
+//                    }
+//                } else {
+//                    self.amountLabel.text = "Bad value!"
+//
+//                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
+//                    PortfolioModel.stockPricesDictionaryFillingAPI()
+//                    PortfolioModel.stockSharesDictionaryFilling()
+//                    PortfolioModel.dictOfAmountsFilling()
+//                    PortfolioModel.dictOfNumberOfStocksFilling()
+//
+//                    self.stocksInPortfolio = PortfolioModel.getPortfolio()
+//                    self.tableView.reloadData()
+//
+//                    let alert = UIAlertController(title: "Wrong format!", message: "Enter your portfolio amount", preferredStyle: .alert)
+//                    let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+//                    alert.addAction(okAction)
+//                    self.present(alert, animated: true, completion: nil)
+//                }
+//            }
+//        }
+//        alertController.addTextField { _ in }
+//        alertController.textFields?.first?.keyboardType = .decimalPad
+//
+//        let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
+//
+//        alertController.addAction(cancelAction)
+//        alertController.addAction(saveAction)
+//
+//        present(alertController, animated: true, completion: nil)
+//    }
    
     @IBOutlet weak var tableView: UITableView!
     
@@ -265,26 +335,23 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
             self.activityIndicator.isHidden = true
             
         }
-        
-        PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
-        PortfolioModel.stockPricesDictionaryFillingAPI()
-        
-        PortfolioModel.stockSharesDictionaryFilling()
-        PortfolioModel.dictOfAmountsFilling()
-        PortfolioModel.dictOfNumberOfStocksFilling()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        PortfolioModel.getMarketCapAndPriceDataAPIandFillAllDictionaries { result in
+            
+            PortfolioAmount = UserSettings.portfolioAmount
+            
+            
+            PortfolioModel.stockSharesDictionaryFilling()
+            PortfolioModel.dictOfAmountsFilling()
+            PortfolioModel.dictOfNumberOfStocksFilling()
+
+            
+            // Загрузка суммы портфеля
+            self.amountLabel.text = String(PortfolioAmount)
             self.stocksInPortfolio = PortfolioModel.getPortfolio()
+
             self.tableView.reloadData()
         }
-        
-        
-    
-        // Загрузка суммы портфеля
-        PortfolioAmount = UserSettings.portfolioAmount
-        amountLabel.text = String(PortfolioAmount)
-        
-        self.stocksInPortfolio = PortfolioModel.getPortfolio()
+
 
         self.tableView.reloadData()
         // обновление таблицы при загрузке, чтобы сразу были видны значения
