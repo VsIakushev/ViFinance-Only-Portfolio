@@ -29,7 +29,7 @@ struct PortfolioModel {
     var quantity : Int
     
     static let arrayOfTickers = ["AAPL", "MSFT", "GOOG"]
-    
+    // ["AAPL", "MSFT", "GOOG", "BRK.B", "JNJ", "V", "NVDA", "JPM", "MA", "META", "WFC", "DIS", "TXN", "SCHW", "ADBE", "SPGI", "AXP", "BLK", "INTU", "PYPL"]
     static var summOfMarketCaps = 0
     
     static var dictOfMarketCap = [String:Double]()
@@ -39,7 +39,7 @@ struct PortfolioModel {
     static var dictOfNubmerOfStocks = [String:Double]()
     
     // Функция 1: Считаем сумму капитализации всех компаний и наполнение dictOfMarketCap
-    static func totalMarketCapCalculationAndDictOfMarketCapFiling(){
+    static func totalMarketCapCalculationAndDictOfMarketCapFilingAPI(){
         // делаю в одной функции, чтобы не дублировать запрос к API
         PortfolioModel.summOfMarketCaps = 0
         for i in 0..<PortfolioModel.arrayOfTickers.count {
@@ -54,7 +54,7 @@ struct PortfolioModel {
     }
     
     // Функция 2: // наполнение dictOfPrices
-    static func stockPricesDictionaryFilling() {
+    static func stockPricesDictionaryFillingAPI() {
         for i in 0..<arrayOfTickers.count {
             networkStockInfoManager.fetchStockPrice(forCompany: arrayOfTickers[i]) { currentStockPrice in
                 PortfolioModel.dictOfPrices[arrayOfTickers[i]] = currentStockPrice.price
@@ -74,7 +74,7 @@ struct PortfolioModel {
         }
     }
     
-    // Функция 4: наполнение dictOfAmounts
+     // Функция 4: наполнение dictOfAmounts
     static func dictOfAmountsFilling() {
         // Задержка 3 сек, чтобы успеть получить данные (API)
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -86,30 +86,50 @@ struct PortfolioModel {
         }
     }
     
-    // Функция 5: наполнение dictOfNumberOfStocks
+     // Функция 5: наполнение dictOfNumberOfStocks
     static func dictOfNumberOfStocksFilling() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             // Задержка 3 сек, чтобы успеть получить данные (API)
             for i in 0..<dictOfAmounts.count {
                 if let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]] {
-                    dictOfNubmerOfStocks[arrayOfTickers[i]] = round(( valueAmount / valuePrice )*1)/1
-                    // добавил 1/1 для целых акций, чтобы потом сделать 10/10 для дополнительного функционала с дробными акциями.
+                dictOfNubmerOfStocks[arrayOfTickers[i]] = round(( valueAmount / valuePrice )*1)/1
+                // добавил 1/1 для целых акций, чтобы потом сделать 10/10 для дополнительного функционала с дробными акциями.
                 }
             }
         }
     }
-    
+
     // Функция 6: Составление портфеля
     static func getPortfolio() -> [PortfolioModel] {
         var portfolio = [PortfolioModel]()
         for i in 0..<arrayOfTickers.count {
             if let valueShare = dictOfShares[arrayOfTickers[i]], let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]], let valueNumberOfStocks = dictOfNubmerOfStocks[arrayOfTickers[i]] {
-                portfolio.append(PortfolioModel(ticker: arrayOfTickers[i], share: String(valueShare*100) + "%", amount: String(format: "%.2f", valueAmount) + "$", price: valuePrice, quantity: Int(valueNumberOfStocks)))
+                portfolio.append(PortfolioModel(ticker: arrayOfTickers[i], share: String(format: "%.2f", valueShare*100) + "%", amount: String(format: "%.2f", valueAmount) + "$", price: valuePrice, quantity: Int(valueNumberOfStocks)))
             }
-            
         }
         return portfolio
     }
+   
+    // Функция 7: Получение API в одной функции, составление словарей с MarketCap и price
+   static let completionFillDictionariesAfterReceivingAPI: (Bool) -> Void = { receivedApi in
+        if receivedApi {
+            stockSharesDictionaryFilling()
+            dictOfAmountsFilling()
+            dictOfNumberOfStocksFilling()
+            
+//            stocksInPortfolio = PortfolioModel.getPortfolio()
+//            tableView.reloadData()
+            
+            print("отключить ActivityIndicator")
+        }
+    }
+    
+    func getMarketCapAndPriceDataAPIandFillAllDictionaries(using completionHandler: (Bool) -> Void) {
+        PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
+        PortfolioModel.stockPricesDictionaryFillingAPI()
+        completionHandler(true)
+    }
+    
 }
 
 
@@ -126,10 +146,10 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     
     @IBAction func testButton(_ sender: UIButton) {
-        //        print("Total market cap: \(PortfolioModel.summOfMarketCaps)")
-        //        print("Dict of market cap: \(PortfolioModel.dictOfMarketCap)")
-        //        print("Array of shares: \(PortfolioModelOld.arrayOfSharesNew)")
-        //        print(stocksInPortfolio)
+//        print("Total market cap: \(PortfolioModel.summOfMarketCaps)")
+//        print("Dict of market cap: \(PortfolioModel.dictOfMarketCap)")
+//        print("Array of shares: \(PortfolioModelOld.arrayOfSharesNew)")
+//        print(stocksInPortfolio)
         print(PortfolioModel.dictOfMarketCap)
         print("_________________")
         print(PortfolioModel.dictOfPrices)
@@ -142,7 +162,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         print("_________________")
         print("Portfolio Old: \(stocksInPortfolio)")
         print("_________________")
-        //        print("Portfolio New: \(stocksInPortfolio2)")
+//        print("Portfolio New: \(stocksInPortfolio2)")
         
     }
     
@@ -160,8 +180,8 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
                     UserSettings.portfolioAmount = PortfolioAmount
                     self.amountLabel.text = newPortfolioAmount
                     
-                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFiling()
-                    PortfolioModel.stockPricesDictionaryFilling()
+                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
+                    PortfolioModel.stockPricesDictionaryFillingAPI()
                     PortfolioModel.stockSharesDictionaryFilling()
                     PortfolioModel.dictOfAmountsFilling()
                     PortfolioModel.dictOfNumberOfStocksFilling()
@@ -178,8 +198,8 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
                 } else {
                     self.amountLabel.text = "Bad value!"
                     
-                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFiling()
-                    PortfolioModel.stockPricesDictionaryFilling()
+                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
+                    PortfolioModel.stockPricesDictionaryFillingAPI()
                     PortfolioModel.stockSharesDictionaryFilling()
                     PortfolioModel.dictOfAmountsFilling()
                     PortfolioModel.dictOfNumberOfStocksFilling()
@@ -196,7 +216,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         }
         alertController.addTextField { _ in }
         alertController.textFields?.first?.keyboardType = .decimalPad
-        
+    
         let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
         
         alertController.addAction(cancelAction)
@@ -204,7 +224,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         
         present(alertController, animated: true, completion: nil)
     }
-    
+   
     @IBOutlet weak var tableView: UITableView!
     
     // две функции, для скрытия клавиатуры по свайпу
@@ -225,15 +245,30 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     let networkStockInfoManager = NetworkStockManager()
     
+    let completionFillDictionariesAfterReceivingAPI: (Bool) -> Void = { receivedApi in
+        if receivedApi {
+            PortfolioModel.stockSharesDictionaryFilling()
+            PortfolioModel.dictOfAmountsFilling()
+            PortfolioModel.dictOfNumberOfStocksFilling()
+            // как отключить отсюда activityIndicator? Или эту функцию переместить
+            // как вызвать переменную stocksInPortfolio?
+        }
+    }
+    
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         Timer.scheduledTimer(withTimeInterval: 3, repeats: false) {_ in
             self.activityIndicator.isHidden = true
+            
         }
         
-        PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFiling()
-        PortfolioModel.stockPricesDictionaryFilling()
+        PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
+        PortfolioModel.stockPricesDictionaryFillingAPI()
+        
         PortfolioModel.stockSharesDictionaryFilling()
         PortfolioModel.dictOfAmountsFilling()
         PortfolioModel.dictOfNumberOfStocksFilling()
@@ -244,12 +279,13 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         }
         
         
+    
         // Загрузка суммы портфеля
         PortfolioAmount = UserSettings.portfolioAmount
         amountLabel.text = String(PortfolioAmount)
         
         self.stocksInPortfolio = PortfolioModel.getPortfolio()
-        
+
         self.tableView.reloadData()
         // обновление таблицы при загрузке, чтобы сразу были видны значения
         
@@ -264,17 +300,17 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         
     }
     
-    //    func updateInterface(marketCap: CurrentStockMarketCap){
-    //        DispatchQueue.main.async {
-    //            self.testLabel.text = marketCap.marketCapString
-    //            self.testString = marketCap.marketCapString
-    //            print(self.testString)
-    //        }
-    //
-    //    }
+//    func updateInterface(marketCap: CurrentStockMarketCap){
+//        DispatchQueue.main.async {
+//            self.testLabel.text = marketCap.marketCapString
+//            self.testString = marketCap.marketCapString
+//            print(self.testString)
+//        }
+//
+//    }
     
     
-    
+
 }
 
 
