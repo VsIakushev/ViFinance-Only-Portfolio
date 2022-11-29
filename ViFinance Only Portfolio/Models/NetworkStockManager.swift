@@ -21,7 +21,7 @@ class NetworkStockManager {
             } else if let error = error {
                 completionHandler(.failure(error))
             } else {
-                fatalError()
+//                fatalError()
             }
         }
         task.resume()
@@ -38,7 +38,7 @@ class NetworkStockManager {
             } else if let error = error {
                 completionHandler(.failure(error))
             } else {
-                fatalError()
+//                fatalError()
             }
         }
         task.resume()
