@@ -120,7 +120,7 @@ struct PortfolioModel {
         }
     }
     
-     // Функция 4: наполнение dictOfAmounts
+    // Функция 4: наполнение dictOfAmounts
     static func dictOfAmountsFilling() {
         syncQueue.sync(flags: .barrier) {
             for i in 0..<dictOfShares.count {
@@ -131,19 +131,18 @@ struct PortfolioModel {
         }
     }
     
-     // Функция 5: наполнение dictOfNumberOfStocks
+    // Функция 5: наполнение dictOfNumberOfStocks
     static func dictOfNumberOfStocksFilling() {
         syncQueue.sync(flags: .barrier) {
-            // Задержка 3 сек, чтобы успеть получить данные (API)
             for i in 0..<dictOfAmounts.count {
                 if let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]] {
-                dictOfNubmerOfStocks[arrayOfTickers[i]] = round(( valueAmount / valuePrice )*1)/1
-                // добавил 1/1 для целых акций, чтобы потом сделать 10/10 для дополнительного функционала с дробными акциями.
+                    dictOfNubmerOfStocks[arrayOfTickers[i]] = round(( valueAmount / valuePrice )*1)/1
+                    // добавил 1/1 для целых акций, чтобы потом сделать 10/10 для дополнительного функционала с дробными акциями.
                 }
             }
         }
     }
-
+    
     // Функция 6: Составление портфеля
     static func getPortfolio() -> [PortfolioModel] {
         var portfolio = [PortfolioModel]()
@@ -167,20 +166,6 @@ struct PortfolioModel {
         portfolio = portfolio.sorted(by: {$0.share > $1.share })
         return portfolio
     }
-   
-    // Функция 7: Получение API в одной функции, составление словарей с MarketCap и price
-//   static let completionFillDictionariesAfterReceivingAPI: (Bool) -> Void = { receivedApi in
-//        if receivedApi {
-//            stockSharesDictionaryFilling()
-//            dictOfAmountsFilling()
-//            dictOfNumberOfStocksFilling()
-//
-////            stocksInPortfolio = PortfolioModel.getPortfolio()
-////            tableView.reloadData()
-//
-//            print("отключить ActivityIndicator")
-//        }
-//    }
     
     static func getMarketCapAndPriceDataAPIandFillAllDictionaries(using completionHandler: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
         totalMarketCapCalculationAndDictOfMarketCapFilingAPI { marketCapResult in
@@ -199,9 +184,7 @@ struct PortfolioModel {
                 }
             }
         }
-        
     }
-    
 }
 
 
@@ -209,33 +192,12 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var amountLabel: UILabel!
     @IBOutlet weak var testLabel: UILabel!
-    
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     var testString = "0"
     
-    
-    
-    
     @IBAction func testButton(_ sender: UIButton) {
-//        print("Total market cap: \(PortfolioModel.summOfMarketCaps)")
-//        print("Dict of market cap: \(PortfolioModel.dictOfMarketCap)")
-//        print("Array of shares: \(PortfolioModelOld.arrayOfSharesNew)")
-//        print(stocksInPortfolio)
-        print(PortfolioModel.dictOfMarketCap)
-        print("_________________")
-        print(PortfolioModel.dictOfPrices)
-        print("_________________")
-        print(PortfolioModel.dictOfShares)
-        print("_________________")
-        print(PortfolioModel.dictOfAmounts)
-        print("_________________")
-        print(PortfolioModel.dictOfNubmerOfStocks)
-        print("_________________")
-        print("Portfolio Old: \(stocksInPortfolio)")
-        print("_________________")
-//        print("Portfolio New: \(stocksInPortfolio2)")
-        
+        //        print("Total market cap: \(PortfolioModel.summOfMarketCaps)")
     }
     
     // MARK: Editing Amount
@@ -245,42 +207,37 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
             let tf = alertController.textFields?.first
             if let newPortfolioAmount = tf?.text {
-
+                
                 PortfolioAmount = Double(newPortfolioAmount) ?? 0.0
                 if PortfolioAmount == Double(newPortfolioAmount) {
                     UserSettings.portfolioAmount = PortfolioAmount
                     self.amountLabel.text = newPortfolioAmount
-
                     self.activityIndicator.isHidden = false
                     
                     PortfolioModel.getMarketCapAndPriceDataAPIandFillAllDictionaries { result in
-                        
                         PortfolioAmount = UserSettings.portfolioAmount
-                        
                         PortfolioModel.stockSharesDictionaryFilling()
                         PortfolioModel.dictOfAmountsFilling()
                         PortfolioModel.dictOfNumberOfStocksFilling()
-                        
                         self.activityIndicator.isHidden = true
                         
                         // Загрузка суммы портфеля
                         self.amountLabel.text = String(PortfolioAmount)
                         self.stocksInPortfolio = PortfolioModel.getPortfolio()
-
                         self.tableView.reloadData()
                     }
                 } else {
                     self.amountLabel.text = "Bad value!"
-
-//                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
-//                    PortfolioModel.stockPricesDictionaryFillingAPI()
-//                    PortfolioModel.stockSharesDictionaryFilling()
-//                    PortfolioModel.dictOfAmountsFilling()
-//                    PortfolioModel.dictOfNumberOfStocksFilling()
-//
-//                    self.stocksInPortfolio = PortfolioModel.getPortfolio()
-//                    self.tableView.reloadData()
-
+                    
+                    //                    PortfolioModel.totalMarketCapCalculationAndDictOfMarketCapFilingAPI()
+                    //                    PortfolioModel.stockPricesDictionaryFillingAPI()
+                    //                    PortfolioModel.stockSharesDictionaryFilling()
+                    //                    PortfolioModel.dictOfAmountsFilling()
+                    //                    PortfolioModel.dictOfNumberOfStocksFilling()
+                    //
+                    //                    self.stocksInPortfolio = PortfolioModel.getPortfolio()
+                    //                    self.tableView.reloadData()
+                    
                     let alert = UIAlertController(title: "Wrong format!", message: "Enter your portfolio amount", preferredStyle: .alert)
                     let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
                     alert.addAction(okAction)
@@ -290,26 +247,30 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         }
         alertController.addTextField { _ in }
         alertController.textFields?.first?.keyboardType = .decimalPad
-
+        
         let cancelAction = UIAlertAction(title: "Cancel", style: .default) { _ in }
-
+        
         alertController.addAction(cancelAction)
         alertController.addAction(saveAction)
-
+        
         present(alertController, animated: true, completion: nil)
     }
-   
+    
     @IBOutlet weak var tableView: UITableView!
     
-    
+    let tableViewRefreshControl: UIRefreshControl = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refresh(sender:)), for: .valueChanged)
+        
+        return refreshControl
+    }()
     
     // две функции, для скрытия клавиатуры
     // по свайпу вниз
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
     }
-    
-    
+
     @objc func hideKeyboardOnSwipeDown() {
         view.endEditing(true)
     }
@@ -320,46 +281,29 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     var stocksInPortfolio = PortfolioModel.getPortfolio()
     
-    // MARK : viewDidLoad
-    
     let networkStockInfoManager = NetworkStockManager()
     
-    let completionFillDictionariesAfterReceivingAPI: (Bool) -> Void = { receivedApi in
-        if receivedApi {
-            PortfolioModel.stockSharesDictionaryFilling()
-            PortfolioModel.dictOfAmountsFilling()
-            PortfolioModel.dictOfNumberOfStocksFilling()
-            // как отключить отсюда activityIndicator? Или эту функцию переместить
-            // как вызвать переменную stocksInPortfolio?
-        }
-    }
-    
-    
-    
+    // MARK : viewDidLoad
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.refreshControl = tableViewRefreshControl
         
         PortfolioModel.getMarketCapAndPriceDataAPIandFillAllDictionaries { result in
-            
             PortfolioAmount = UserSettings.portfolioAmount
-            
             PortfolioModel.stockSharesDictionaryFilling()
             PortfolioModel.dictOfAmountsFilling()
             PortfolioModel.dictOfNumberOfStocksFilling()
-            
             self.activityIndicator.isHidden = true
             
             // Загрузка суммы портфеля
             self.amountLabel.text = String(PortfolioAmount)
             self.stocksInPortfolio = PortfolioModel.getPortfolio()
-
             self.tableView.reloadData()
         }
-
-
-        self.tableView.reloadData()
+        
+//        self.tableView.reloadData()
         // обновление таблицы при загрузке, чтобы сразу были видны значения
         
         // Добавляю свайп, по которому убирается клавиатура
@@ -368,24 +312,26 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         swipeDown.direction =  UISwipeGestureRecognizer.Direction.down
         self.tableView.addGestureRecognizer(swipeDown)
         
-        
         tableView.tableFooterView = UIView() //скрыл разлиновку таблицы ниже, последнего элемента портфеля.
         
     }
     
-//    func updateInterface(marketCap: CurrentStockMarketCap){
-//        DispatchQueue.main.async {
-//            self.testLabel.text = marketCap.marketCapString
-//            self.testString = marketCap.marketCapString
-//            print(self.testString)
-//        }
-//
-//    }
-    
-    
-
+    @objc private func refresh(sender: UIRefreshControl) {
+        PortfolioModel.getMarketCapAndPriceDataAPIandFillAllDictionaries { result in
+            PortfolioAmount = UserSettings.portfolioAmount
+            PortfolioModel.stockSharesDictionaryFilling()
+            PortfolioModel.dictOfAmountsFilling()
+            PortfolioModel.dictOfNumberOfStocksFilling()
+            self.activityIndicator.isHidden = true
+            
+            // Загрузка суммы портфеля
+            self.amountLabel.text = String(PortfolioAmount)
+            self.stocksInPortfolio = PortfolioModel.getPortfolio()
+            self.tableView.reloadData()
+        }
+        sender.endRefreshing()
+    }
 }
-
 
 extension PortfoliosViewController: UITableViewDelegate, UITableViewDataSource {
     
