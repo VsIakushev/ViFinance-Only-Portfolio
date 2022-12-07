@@ -101,7 +101,7 @@ struct PortfolioModelTestNew {
     
     
     static func getPortfolio() -> [CompanyInfo] {
-        var Portfolio = [CompanyInfo]()
+        var portfolio = [CompanyInfo]()
         arrayOfAmounts.removeAll()
         
         for i in 0..<arrayOfTickers.count {
@@ -110,8 +110,8 @@ struct PortfolioModelTestNew {
         }
         
         for i in 0..<arrayOfTickers.count {
-            Portfolio.append(CompanyInfo(ticker: arrayOfTickers[i], share: String(arrayOfShares[i]) + "%", amount: arrayOfAmounts[i], price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
+            portfolio.append(CompanyInfo(ticker: arrayOfTickers[i], share: String(arrayOfShares[i]) + "%", amount: arrayOfAmounts[i], price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
         }
-        return Portfolio
+        return portfolio
     }
 }

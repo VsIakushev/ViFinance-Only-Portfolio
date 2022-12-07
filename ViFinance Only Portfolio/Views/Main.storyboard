@@ -26,7 +26,7 @@
                                 <rect key="frame" x="20" y="182.5" width="374" height="529.5"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="r34-e5-6mB" customClass="CustomCell" customModule="ViFinance_Only_Portfolio" customModuleProvider="target">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="Cell" id="r34-e5-6mB" customClass="CompanyCell" customModule="ViFinance_Only_Portfolio" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="28" width="374" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="r34-e5-6mB" id="fk7-Bc-bnG">
@@ -78,10 +78,11 @@
                                         </tableViewCellContentView>
                                         <connections>
                                             <outlet property="QuantityLabel" destination="eag-Jo-bTh" id="gu5-ML-b2p"/>
-                                            <outlet property="amountLabel" destination="HfN-3S-lfe" id="ddf-0R-oXE"/>
-                                            <outlet property="priceLabel" destination="RBZ-lM-gfB" id="0WI-15-KSg"/>
-                                            <outlet property="shareLabel" destination="s7l-Nz-Ywn" id="5rE-0f-43q"/>
-                                            <outlet property="tickerLabel" destination="9J8-1a-i2u" id="r6W-SP-cCW"/>
+                                            <outlet property="amountLabel" destination="HfN-3S-lfe" id="26y-vT-285"/>
+                                            <outlet property="priceLabel" destination="RBZ-lM-gfB" id="b4w-5x-abN"/>
+                                            <outlet property="quantityLabel" destination="eag-Jo-bTh" id="9pn-RF-Koe"/>
+                                            <outlet property="shareLabel" destination="s7l-Nz-Ywn" id="EG5-HM-j7U"/>
+                                            <outlet property="tickerLabel" destination="9J8-1a-i2u" id="p3m-9w-GkH"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
