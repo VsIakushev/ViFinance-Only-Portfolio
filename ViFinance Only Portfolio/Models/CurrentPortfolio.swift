@@ -8,14 +8,22 @@
 
 import Foundation
 
+// Это был тестовый раздел, где описывал структуру приложения.
 
-struct PortfolioModelTest {
-    let arrayOfTickersTest = ["BIIB", "MA", "AMAT", "SCHW"]
-    
-    func PortfolioModelCountTest() -> Int {
-        return arrayOfTickersTest.count
-    }
-}
+//let networkStockInfoManager = NetworkStockManager()
+
+
+
+//
+//struct PortfolioModelTest {
+//    let arrayOfTickersTest = ["BIIB", "MA", "AMAT", "SCHW"]
+//
+//    func PortfolioModelCountTest() -> Int {
+//        return arrayOfTickersTest.count
+//    }
+//}
+
+
 
 // Создаю новую структуру/класс с Компанией (отдельный Класс от Портфеля?), ее тикером, долей, суммой, ценой и количеством. Далее из таких Компаний будет сформирован Портфель (Массив), его можно будет отсортировать по сумме в портфеле.
 // 1. Расчет доли: получаем MarketCap API каждой компании из списка, суммируем, находим долю каждой компании, и добавляем в массив в том же порядке, что и компании.
@@ -34,32 +42,32 @@ struct PortfolioModelTest {
 
 
 
-struct CompanyInfo {
-    var ticker : String
-    var share : String // доля  портфеле в %
-    var amount : Double // сумма позиции в портфеле в $
-    var price : Double // цена акции
-    var quantity : Int // количество акций в портфеле
-}
-
-
-var testValue: Int = 0
-let networkStockInfoManager = NetworkStockManager()
-let staticArrayOfTickers = ["BIIB", "WFC", "DIS", "BLK", "JPM"]
-
-struct PortfolioModelTestNew {
+//struct CompanyInfo {
 //    var ticker : String
 //    var share : String // доля  портфеле в %
 //    var amount : Double // сумма позиции в портфеле в $
 //    var price : Double // цена акции
 //    var quantity : Int // количество акций в портфеле
+//}
+//
+//
+//var testValue: Int = 0
 
-    
-    static  let arrayOfTickers = ["AAPL", "MSFT", "GOOG", "BRK.B", "META", "NVDA"]
-    static var arrayOfShares = [21.15, 17.22, 11.31, 6.55, 4.35, 3.47 ]
-    static var arrayOfAmounts = [0.0]
-    static  let arrayOfPrices = [153.12, 247.42, 120.57, 330.14, 140.32, 160.58]
-    static  let arrayOfNubmerOfStocks = [45, 22, 16, 13, 7, 6]
+//let staticArrayOfTickers = ["BIIB", "WFC", "DIS", "BLK", "JPM"]
+//
+//struct PortfolioModelTestNew {
+////    var ticker : String
+////    var share : String // доля  портфеле в %
+////    var amount : Double // сумма позиции в портфеле в $
+////    var price : Double // цена акции
+////    var quantity : Int // количество акций в портфеле
+//
+//
+//    static  let arrayOfTickers = ["AAPL", "MSFT", "GOOG", "BRK.B", "META", "NVDA"]
+//    static var arrayOfShares = [21.15, 17.22, 11.31, 6.55, 4.35, 3.47 ]
+//    static var arrayOfAmounts = [0.0]
+//    static  let arrayOfPrices = [153.12, 247.42, 120.57, 330.14, 140.32, 160.58]
+//    static  let arrayOfNubmerOfStocks = [45, 22, 16, 13, 7, 6]
     
     // получение данных через API и заполнение массивов
     
@@ -97,21 +105,21 @@ struct PortfolioModelTestNew {
 //    }
     
 
-    
-    
-    
-    static func getPortfolio() -> [CompanyInfo] {
-        var portfolio = [CompanyInfo]()
-        arrayOfAmounts.removeAll()
-        
-        for i in 0..<arrayOfTickers.count {
-            arrayOfAmounts.append(round((Double(PortfolioAmount) * arrayOfShares[i] / 100)*10)/10)
-            
-        }
-        
-        for i in 0..<arrayOfTickers.count {
-            portfolio.append(CompanyInfo(ticker: arrayOfTickers[i], share: String(arrayOfShares[i]) + "%", amount: arrayOfAmounts[i], price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
-        }
-        return portfolio
-    }
-}
+//
+//
+//
+//    static func getPortfolio() -> [CompanyInfo] {
+//        var portfolio = [CompanyInfo]()
+//        arrayOfAmounts.removeAll()
+//
+//        for i in 0..<arrayOfTickers.count {
+//            arrayOfAmounts.append(round((Double(PortfolioAmount) * arrayOfShares[i] / 100)*10)/10)
+//
+//        }
+//
+//        for i in 0..<arrayOfTickers.count {
+//            portfolio.append(CompanyInfo(ticker: arrayOfTickers[i], share: String(arrayOfShares[i]) + "%", amount: arrayOfAmounts[i], price: arrayOfPrices[i], quantity: Int(arrayOfAmounts[i] / arrayOfPrices[i])))
+//        }
+//        return portfolio
+//    }
+//}

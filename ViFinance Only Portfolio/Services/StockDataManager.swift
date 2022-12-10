@@ -8,46 +8,166 @@
 
 import Foundation
 
-// перенести сюда функции получения и обработки данных (1-6)
+
+
+let networkStockInfoManager = NetworkStockManager()
+
+// StockDataManager обрабатывает данные, получаемые от NetworkStockManager, составляет словари, необходимые для составления TableView, формирует итоговый массив структур
 
 final class StocksDataManager {
+  
+    static var summOfMarketCaps = 0
     
-//    private var sortedStocks: [Any] = []
-//
-//    private let networkManager: NWManager
-//
-//    private var firstArray: [String: Any] = [:]
-//    private var secondArray: [String: Any] = [:]
-//
-//    // здесь создать глобальную диспатч группу
-//
-//    init(networkManager: NWManager = NWManager.shared) {
-//        self.networkManager = networkManager
-//    }
-//
-//    func receiveStocks(completion: @escaping (([Any]) -> Void)) {
-//        guard let urlOne = URL(string: "https://google.com"),
-//            let urlTwo = URL(string: "https://google.com") else {
-//            return
-//        }
-//
-//        // оба запроса надо закинуть в dispatchGroup
-//        networkManager.getData(from: urlOne) { [weak self] someData in
-//            self?.firstArray = ["oneKey": "SomeData"]
-//        }
-//
-//        networkManager.getData(from: urlTwo) { [weak self] someData in
-//            self?.secondArray = ["secondKey": "SomeData"]
-//        }
-//
-//        // как только отработают эти методы внутри диспатч группы, реализуем сортировку этих массивов:
-//        sortStocks()
-//
-//        completion(sortedStocks)
-//    }
-//
-//    private func sortStocks() {
-//        // тут происзодит сортиовка
-//        sortedStocks.append("Stock")
-//    }
+//    let networkStockInfoManager = NetworkStockManager()
+       
+       static var dictOfMarketCap = [String:Double]()
+       static var dictOfShares = [String:Double]()
+       static var dictOfPrices = [String:Double]()
+       static var dictOfAmounts = [String:Double]()
+       static var dictOfNubmerOfStocks = [String:Double]()
+       
+       // Создаем очередь
+       static var syncQueue: DispatchQueue = .init(label: "sync", qos: .background, attributes: .concurrent)
+       
+       // Функция 1: Считаем сумму капитализации всех компаний и наполнение dictOfMarketCap
+       static func totalMarketCapCalculationAndDictOfMarketCapFilingAPI(completion: @escaping (Result<Void, PortfolioFetchError>) -> Void){
+           // делаю в одной функции, чтобы не дублировать запрос к API
+           self.summOfMarketCaps = 0
+           var errors: [Error] = []
+           
+           let group = DispatchGroup()
+           
+           for ticker in arrayOfTickers {
+               group.enter()
+               networkStockInfoManager.fetchStockMarketCapitalization(forCompany: ticker) { currentStockMarketCap in
+                   syncQueue.async(flags: .barrier) {
+                       switch currentStockMarketCap {
+                       case let .success(cap):
+                           self.summOfMarketCaps += cap.marketCapInt
+                           self.dictOfMarketCap[ticker] = cap.marketCap
+                       case let .failure(error):
+                           errors.append(error)
+                       }
+                       
+                       group.leave()
+                   }
+               }
+           }
+           
+           group.notify(queue: .main) {
+               print("Sum of Market Cap after Delay is : \(self.summOfMarketCaps)")
+               if errors.isEmpty {
+                   completion(.success(()))
+               } else {
+                   completion(.failure(PortfolioFetchError(errors: errors)))
+               }
+           }
+       }
+       
+       // Функция 2: // наполнение dictOfPrices
+       static func stockPricesDictionaryFillingAPI(completion: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
+           let group = DispatchGroup()
+           var errors: [Error] = []
+           
+           for ticker in arrayOfTickers {
+               group.enter()
+               networkStockInfoManager.fetchStockPrice(forCompany: ticker) { currentStockPrice in
+                   syncQueue.async(flags: .barrier) {
+                       switch currentStockPrice {
+                       case let .success(price):
+                           self.dictOfPrices[ticker] = price.price
+                       case let .failure(error):
+                           errors.append(error)
+                       }
+                       
+                       group.leave()
+                   }
+               }
+           }
+           group.notify(queue: .main) {
+               if errors.isEmpty {
+                   completion(.success(()))
+               } else {
+                   completion(.failure(.init(errors: errors)))
+               }
+           }
+       }
+       
+       // Функция 3: наполнение dictOfShares
+       static func stockSharesDictionaryFilling() {
+           syncQueue.sync(flags: .barrier) {
+               for i in 0..<dictOfMarketCap.count {
+                   if let value = dictOfMarketCap[arrayOfTickers[i]] {
+                       dictOfShares[arrayOfTickers[i]] = round(Double(value / Double( summOfMarketCaps))*10000)/10000
+                   }
+               }
+           }
+       }
+       
+       // Функция 4: наполнение dictOfAmounts
+       static func dictOfAmountsFilling() {
+           syncQueue.sync(flags: .barrier) {
+               for i in 0..<dictOfShares.count {
+                   if let value = dictOfShares[arrayOfTickers[i]] {
+                       dictOfAmounts[arrayOfTickers[i]] = value*PortfolioAmount
+                   }
+               }
+           }
+       }
+       
+       // Функция 5: наполнение dictOfNumberOfStocks
+       static func dictOfNumberOfStocksFilling() {
+           syncQueue.sync(flags: .barrier) {
+               for i in 0..<dictOfAmounts.count {
+                   if let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]] {
+                       dictOfNubmerOfStocks[arrayOfTickers[i]] = round(( valueAmount / valuePrice )*1)/1
+                       // добавил 1/1 для целых акций, чтобы потом сделать 10/10 для дополнительного функционала с дробными акциями.
+                   }
+               }
+           }
+       }
+       
+       // Функция 6: Составление портфеля
+       static func getPortfolio() -> [CompanyInfoModel] {
+           var portfolio = [CompanyInfoModel]()
+           for ticker in arrayOfTickers {
+               if
+                   let valueShare = dictOfShares[ticker],
+                   let valueAmount = dictOfAmounts[ticker],
+                   let valuePrice = dictOfPrices[ticker],
+                   let valueNumberOfStocks = dictOfNubmerOfStocks[ticker]
+               {
+                   portfolio.append(CompanyInfoModel(
+                       ticker: ticker,
+                       share: String(format: "%.2f", valueShare*100) + "%",
+                       amount: String(format: "%.2f", valueAmount) + "$",
+                       price: String(format: "%.2f", valuePrice),
+                       quantity: Int(valueNumberOfStocks)
+                   ))
+               }
+           }
+           // сортировка по доле компании в портфеле
+           portfolio = portfolio.sorted(by: {$0.share > $1.share })
+           return portfolio
+       }
+       
+       static func getMarketCapAndPriceDataAPIandFillAllDictionaries(using completionHandler: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
+           totalMarketCapCalculationAndDictOfMarketCapFilingAPI { marketCapResult in
+               stockPricesDictionaryFillingAPI { pricesResult in
+                   var errors: [Error] = []
+                   if case let .failure(error) = marketCapResult {
+                       errors.append(contentsOf: error.errors)
+                   }
+                   if case let .failure(error) = pricesResult {
+                       errors.append(contentsOf: error.errors)
+                   }
+                   if errors.isEmpty {
+                       completionHandler(.success(()))
+                   } else {
+                       completionHandler(.failure(.init(errors: errors)))
+                   }
+               }
+           }
+       }
+    
 }

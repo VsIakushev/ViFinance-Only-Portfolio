@@ -16,7 +16,7 @@ final class CompanyCell: UITableViewCell {
     @IBOutlet private weak var priceLabel: UILabel!
     @IBOutlet private weak var quantityLabel: UILabel!
     
-    func configure(with info: PortfolioModel) {
+    func configure(with info: CompanyInfoModel) {
         tickerLabel.text = info.ticker
         shareLabel.text = String(info.share)
         amountLabel.text = String(info.amount)
@@ -25,6 +25,9 @@ final class CompanyCell: UITableViewCell {
     }
     
 }
+
+// TODO: результаты за день в %, зеленый если +, красный если -, и сравнение с S&P500
+//
 
 // Пример архитектуры
 

@@ -10,6 +10,8 @@ import Foundation
 
 final class UserSettings {
     
+    // portfolioAmount - сумма портфеля клиента
+    
     private enum SettingsKeys: String {
         case amount
     }
@@ -26,5 +28,7 @@ final class UserSettings {
             }
         }
     }
+    
+    
 }
  
