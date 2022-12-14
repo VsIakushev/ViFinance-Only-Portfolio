@@ -8,6 +8,8 @@
 
 import Foundation
 
+
+
 let apiKeyAlphavantage = "YS3MMZDTUIYJMGFN"
 
 let apiKeyfinancialmodelingprep = "074ae9060b1b2a39a0130b7e8ac38edd"
@@ -16,3 +18,5 @@ let apiKeyfinancialmodelingprep = "074ae9060b1b2a39a0130b7e8ac38edd"
 // Состав портфеля на год (04.2022 - 04.2023)
 let arrayOfTickers = ["AAPL", "MSFT", "GOOG"]
 // ["AAPL", "MSFT", "GOOG", "BRK.B", "JNJ", "V", "NVDA", "JPM", "MA", "META", "WFC", "DIS", "TXN", "SCHW", "ADBE", "SPGI", "AXP", "BLK", "INTU", "PYPL"]
+
+    

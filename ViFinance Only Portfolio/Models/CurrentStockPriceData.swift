@@ -12,6 +12,8 @@ struct CurrentStockPriceDatum: Codable {
 //    let symbol: String
     let price: Double
 //    let volume: Int
+
 }
 
 typealias CurrentStockPriceData = [CurrentStockPriceDatum]
+

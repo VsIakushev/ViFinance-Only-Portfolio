@@ -23,7 +23,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     var testString = "0"
     
     @IBAction func testButton(_ sender: UIButton) {
-        //        print("Total market cap: \(PortfolioModel.summOfMarketCaps)")
+        print(StocksDataManager.dictOfNubmerOfStocks)
     }
     
     // MARK: Editing Amount
@@ -32,7 +32,6 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
             let tf = alertController.textFields?.first
             if let newPortfolioAmount = tf?.text {
-                
                 PortfolioAmount = Double(newPortfolioAmount) ?? 0.0
                 if PortfolioAmount == Double(newPortfolioAmount) {
                     UserSettings.portfolioAmount = PortfolioAmount
@@ -44,6 +43,9 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
                         StocksDataManager.stockSharesDictionaryFilling()
                         StocksDataManager.dictOfAmountsFilling()
                         StocksDataManager.dictOfNumberOfStocksFilling()
+                        
+                        //Сохраняем dictOfNumberOfStocks в userDefaults для использования при построения этого портфеля в дальнейшем
+                        StocksDataManager.saveNumberOfStocksInUserDefaults()
                         self.activityIndicator.isHidden = true
                         
                         // Загрузка суммы портфеля
@@ -111,6 +113,8 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     // MARK : viewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
+            
+        StocksDataManager.loadNumberOfStocksFromUserDefaults()
         
         tableView.refreshControl = tableViewRefreshControl
         
@@ -120,13 +124,13 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
             StocksDataManager.dictOfAmountsFilling()
             StocksDataManager.dictOfNumberOfStocksFilling()
             self.activityIndicator.isHidden = true
-            
+
             // Загрузка суммы портфеля
             self.amountLabel.text = String(PortfolioAmount)
             self.stocksInPortfolio = StocksDataManager.getPortfolio()
             self.tableView.reloadData()
         }
-        
+          print(StocksDataManager.dictOfNubmerOfStocks)
         // Добавляю свайп, по которому убирается клавиатура
         let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(self.hideKeyboardOnSwipeDown))
         swipeDown.delegate = self
@@ -135,6 +139,7 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         
         tableView.tableFooterView = UIView() //скрыл разлиновку таблицы ниже, последнего элемента портфеля.
     }
+    
     @objc private func refresh(sender: UIRefreshControl) {
         StocksDataManager.getMarketCapAndPriceDataAPIandFillAllDictionaries { result in
             PortfolioAmount = UserSettings.portfolioAmount

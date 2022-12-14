@@ -14,6 +14,6 @@ struct CompanyInfoModel {
     var share : String
     var amount : String
     var price : String
-    var quantity : Int
+    var quantity : String
     
 }

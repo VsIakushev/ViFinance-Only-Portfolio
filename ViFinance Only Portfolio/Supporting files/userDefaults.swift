@@ -14,6 +14,7 @@ final class UserSettings {
     
     private enum SettingsKeys: String {
         case amount
+        case portfolio
     }
     
     static var portfolioAmount: Double! {
@@ -28,7 +29,5 @@ final class UserSettings {
             }
         }
     }
-    
-    
 }
- 
+
