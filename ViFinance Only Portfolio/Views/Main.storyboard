@@ -23,7 +23,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="gm2-zZ-lxs">
-                                <rect key="frame" x="20" y="182.5" width="374" height="529.5"/>
+                                <rect key="frame" x="20" y="185.5" width="374" height="526.5"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 <prototypes>
@@ -93,7 +93,7 @@
                                 </connections>
                             </tableView>
                             <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="21" translatesAutoresizingMaskIntoConstraints="NO" id="d4U-20-WO3">
-                                <rect key="frame" x="25" y="149.5" width="364" height="18"/>
+                                <rect key="frame" x="25" y="152.5" width="364" height="18"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ticker" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="htA-T0-2b9">
                                         <rect key="frame" x="0.0" y="0.0" width="46" height="18"/>
@@ -128,16 +128,16 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="uqX-wp-YMT">
-                                <rect key="frame" x="51" y="99.5" width="312" height="30"/>
+                                <rect key="frame" x="20" y="99.5" width="374" height="33"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Your Portfolio Amount:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JLY-w8-T3b">
-                                        <rect key="frame" x="0.0" y="0.0" width="173" height="30"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="173" height="33"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DR7-nn-ufO">
-                                        <rect key="frame" x="181" y="0.0" width="93" height="30"/>
+                                        <rect key="frame" x="181" y="0.0" width="93" height="33"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="93" id="d7g-Zq-nDh"/>
                                         </constraints>
@@ -146,7 +146,8 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BtY-bg-aMe">
-                                        <rect key="frame" x="282" y="0.0" width="30" height="30"/>
+                                        <rect key="frame" x="282" y="0.0" width="92" height="33"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Edit"/>
                                         <connections>
                                             <action selector="editPortfolioAmount:" destination="BYZ-38-t0r" eventType="touchUpInside" id="IvA-up-mT4"/>
@@ -177,6 +178,7 @@
                             <constraint firstItem="gm2-zZ-lxs" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="0PV-bG-nwd"/>
                             <constraint firstItem="Xca-Ch-bPe" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="1G7-sv-c6m"/>
                             <constraint firstItem="B7z-VZ-6ZB" firstAttribute="top" secondItem="Xca-Ch-bPe" secondAttribute="bottom" constant="25.5" id="52o-Xq-qcy"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="uqX-wp-YMT" secondAttribute="trailing" constant="20" id="76N-DX-qIb"/>
                             <constraint firstItem="gXi-o1-QXM" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="7UW-RZ-U0Y"/>
                             <constraint firstItem="d4U-20-WO3" firstAttribute="top" secondItem="uqX-wp-YMT" secondAttribute="bottom" constant="20" id="By0-mq-qal"/>
                             <constraint firstItem="uqX-wp-YMT" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="F7E-8x-DCw"/>
@@ -185,6 +187,7 @@
                             <constraint firstItem="uqX-wp-YMT" firstAttribute="top" secondItem="gXi-o1-QXM" secondAttribute="bottom" constant="20" id="Vn3-1i-RXw"/>
                             <constraint firstItem="Dr9-rV-RYd" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="YKw-MS-KXf"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="d4U-20-WO3" secondAttribute="trailing" constant="25" id="bc0-6U-p2G"/>
+                            <constraint firstItem="uqX-wp-YMT" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="hWQ-e0-tqp"/>
                             <constraint firstItem="B7z-VZ-6ZB" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="jv0-XY-x8v"/>
                             <constraint firstItem="d4U-20-WO3" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="25" id="jvC-oJ-Vri"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="gm2-zZ-lxs" secondAttribute="bottom" constant="150" id="wHM-bn-aSL"/>
