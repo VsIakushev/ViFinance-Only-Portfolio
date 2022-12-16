@@ -23,6 +23,7 @@ final class StocksDataManager {
     static var dictOfMarketCap = [String:Double]()
     static var dictOfShares = [String:Double]()
     static var dictOfPrices = [String:Double]()
+    static var dictOfPastPrices = [String:Double]()
     static var dictOfAmounts = [String:Double]()
     static var dictOfNubmerOfStocks = [String:Double]()
     
@@ -93,6 +94,60 @@ final class StocksDataManager {
         }
     }
     
+    // Функция : // наполнение dictOfPastPrices - цены закрытия прошлого дня
+    static func pastStockPricesDictionaryFillingAPI(completion: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
+        let group = DispatchGroup()
+        var errors: [Error] = []
+        // TODO: добавить проверку на ДАТУ, чтобы пропустить запрос, если уже есть данные на эту дату
+        let dateOfRequest = ""
+        
+        for ticker in arrayOfTickers {
+            group.enter()
+            networkStockInfoManager.fetchPastStockPrice(forCompany: ticker) { pastStockPrice in
+                syncQueue.async(flags: .barrier) {
+                    switch pastStockPrice {
+                    case let .success(pastPrice):
+                        self.dictOfPastPrices[ticker] = pastPrice.close
+                    case let .failure(error):
+                        errors.append(error)
+                    }
+                    
+                    group.leave()
+                }
+            }
+        }
+        group.notify(queue: .main) {
+            if errors.isEmpty {
+                completion(.success(()))
+            } else {
+                completion(.failure(.init(errors: errors)))
+            }
+        }
+    }
+    
+     // TODO: !!!!!!!!!!!!!!!!!!!!!!!!
+    // Функция : считаем размер портфеля на закрытии прошлого дня и сохраняем в память
+    static func calculatePreviousDayPortfolioAmountAndSaveValueInUserDefaults() {
+        syncQueue.sync(flags: .barrier) {
+            // считаем значение размера портфеля на конец предыдущего дня
+            var previousDayPortfolioAmount = 0.0
+            for ticker in arrayOfTickers {
+                if
+                    let number = dictOfNubmerOfStocks[ticker],
+                    let price = dictOfPastPrices[ticker]
+                {
+                    let oldAmount = round(Double(number) * Double(price)*10)/10
+                    previousDayPortfolioAmount += oldAmount
+                }
+
+            }
+            UserSettings.previousDayportfolioAmount = previousDayPortfolioAmount
+        }
+    }
+    
+    // Функция: Получение данных, расчет в одной функции.
+//    static func 
+    
     // Функция 3: наполнение dictOfShares
     static func stockSharesDictionaryFilling() {
         syncQueue.sync(flags: .barrier) {
@@ -121,7 +176,6 @@ final class StocksDataManager {
             for i in 0..<dictOfAmounts.count {
                 if let valueAmount = dictOfAmounts[arrayOfTickers[i]], let valuePrice = dictOfPrices[arrayOfTickers[i]] {
                     dictOfNubmerOfStocks[arrayOfTickers[i]] = round(Double( valueAmount / valuePrice )*10)/10
-                    // добавил 1/1 для целых акций, чтобы потом сделать 10/10 для дополнительного функционала с дробными акциями.
                 }
             }
         }
@@ -138,6 +192,74 @@ final class StocksDataManager {
                dictOfNubmerOfStocks = numberOfStocks
            }
        }
+    
+    // Функция Получение данных о ценах и капитализации при указании размера портфеля (Первичное указание значения, или его изменение в дальнейшем)
+    static func getMarketCapAndPriceDataAPIandFillAllDictionaries(using completionHandler: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
+        totalMarketCapCalculationAndDictOfMarketCapFilingAPI { marketCapResult in
+            stockPricesDictionaryFillingAPI { pricesResult in
+                var errors: [Error] = []
+                if case let .failure(error) = marketCapResult {
+                    errors.append(contentsOf: error.errors)
+                }
+                if case let .failure(error) = pricesResult {
+                    errors.append(contentsOf: error.errors)
+                }
+                if errors.isEmpty {
+                    completionHandler(.success(()))
+                } else {
+                    completionHandler(.failure(.init(errors: errors)))
+                }
+            }
+        }
+    }
+    
+    // Функция Получения данных о ценах при обновлении портфеля (Обновляем только цену акции)
+    static func getOnlyPriceDataAPIandRefreshAllDictionaries(using completionHandler: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
+        stockPricesDictionaryFillingAPI { pricesResult in
+            var errors: [Error] = []
+            if case let .failure(error) = pricesResult {
+                errors.append(contentsOf: error.errors)
+            }
+            if errors.isEmpty {
+                completionHandler(.success(()))
+            } else {
+                completionHandler(.failure(.init(errors: errors)))
+            }
+        }
+    }
+    
+    // Функция обновления словарей при обновлении только цены акций
+    static func refreshDictOfAmountsAndPortfolioAmount() {
+        syncQueue.sync(flags: .barrier) {
+            // считаем новое значение размера портфеля
+            var newPortfolioAmount = 0.0
+            for ticker in arrayOfTickers {
+                if
+                    let number = dictOfNubmerOfStocks[ticker],
+                    let price = dictOfPrices[ticker]
+                {
+                    let newAmount = round(Double(number) * Double(price)*10)/10
+                    dictOfAmounts[ticker] = newAmount
+                    newPortfolioAmount += newAmount
+                }
+
+            }
+            UserSettings.portfolioAmount = newPortfolioAmount
+        }
+    }
+    
+    static func refreshDictOfShares() {
+        syncQueue.sync(flags: .barrier) {
+            for ticker in arrayOfTickers {
+                if
+                    let amount = dictOfAmounts[ticker],
+                    let portfolioAmount = UserSettings.portfolioAmount
+                {
+                    dictOfShares[ticker] = round(Double(amount / portfolioAmount)*10000)/10000
+                }
+            }
+        }
+    }
     
     // Функция 8: Построение портфеля для отображения в TableView
     static func getPortfolio() -> [CompanyInfoModel] {
@@ -161,76 +283,6 @@ final class StocksDataManager {
         // сортировка по доле компании в портфеле
         portfolio = portfolio.sorted(by: {$0.share > $1.share })
         return portfolio
-    }
-    
-    // Функция при указании размера портфеля (Первичное указание значения, или его изменение в дальнейшем)
-    static func getMarketCapAndPriceDataAPIandFillAllDictionaries(using completionHandler: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
-        totalMarketCapCalculationAndDictOfMarketCapFilingAPI { marketCapResult in
-            stockPricesDictionaryFillingAPI { pricesResult in
-                var errors: [Error] = []
-                if case let .failure(error) = marketCapResult {
-                    errors.append(contentsOf: error.errors)
-                }
-                if case let .failure(error) = pricesResult {
-                    errors.append(contentsOf: error.errors)
-                }
-                if errors.isEmpty {
-                    completionHandler(.success(()))
-                } else {
-                    completionHandler(.failure(.init(errors: errors)))
-                }
-            }
-        }
-    }
-    
-    // Функция при обновлении портфеля (Обновляем только цену акции)
-    static func getOnlyPriceDataAPIandRefreshAllDictionaries(using completionHandler: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
-        stockPricesDictionaryFillingAPI { pricesResult in
-            var errors: [Error] = []
-            if case let .failure(error) = pricesResult {
-                errors.append(contentsOf: error.errors)
-            }
-            if errors.isEmpty {
-                completionHandler(.success(()))
-            } else {
-                completionHandler(.failure(.init(errors: errors)))
-            }
-        }
-    }
-    
-    
-    // Функция обновления словарей при обновлении только цены акций
-    static func refreshDictOfAmountsAndPortfolioAmount() {
-        syncQueue.sync(flags: .barrier) {
-            // считаем новое значение размера портфеля
-            var newPortfolioAmount = 0.0
-            for ticker in arrayOfTickers {
-                if
-                    let number = dictOfNubmerOfStocks[ticker],
-                    let price = dictOfPrices[ticker]
-                {
-                    let newAmount = round(Double(number) * Double(price)*10)/10
-                    dictOfAmounts[ticker] = newAmount
-                    newPortfolioAmount += newAmount
-                }
-
-            }
-            // TODO: добавить позже остаток денежных средств CASH
-            UserSettings.portfolioAmount = newPortfolioAmount
-        }
-    }
-    
-    static func refreshDictOfShares() {
-        syncQueue.sync(flags: .barrier) {
-            for ticker in arrayOfTickers {
-                if
-                    let amount = dictOfAmounts[ticker],
-                    let portfolioAmount = UserSettings.portfolioAmount
-                {
-                    dictOfShares[ticker] = round(Double(amount / portfolioAmount)*10000)/10000
-                }
-            }
-        }
     }
     
 }

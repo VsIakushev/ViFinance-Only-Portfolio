@@ -145,8 +145,14 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(0.0%)" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iSR-vh-SD8">
+                                        <rect key="frame" x="282" y="0.0" width="50.5" height="33"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BtY-bg-aMe">
-                                        <rect key="frame" x="282" y="0.0" width="92" height="33"/>
+                                        <rect key="frame" x="340.5" y="0.0" width="33.5" height="33"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <state key="normal" title="Edit"/>
                                         <connections>
@@ -200,6 +206,7 @@
                     <connections>
                         <outlet property="activityIndicator" destination="Dr9-rV-RYd" id="rOk-nX-m90"/>
                         <outlet property="amountLabel" destination="DR7-nn-ufO" id="tOC-Ka-req"/>
+                        <outlet property="dayChangeLabel" destination="iSR-vh-SD8" id="KZe-Yo-nFJ"/>
                         <outlet property="tableView" destination="gm2-zZ-lxs" id="Cn5-Is-QgU"/>
                         <outlet property="testLabel" destination="Xca-Ch-bPe" id="I6A-aa-tnZ"/>
                     </connections>

@@ -17,14 +17,48 @@ struct PortfolioFetchError: Error {
 class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     @IBOutlet weak var amountLabel: UILabel!
+    @IBOutlet weak var dayChangeLabel: UILabel!
     @IBOutlet weak var testLabel: UILabel!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+    // TODO: Куда убрать?
+    // Функция расчета изменения стоимости портфеля за текущий день.
+    func calculateDayChangeInPercent() {
+        let dayChangeInPercent = ((UserSettings.portfolioAmount/UserSettings.previousDayportfolioAmount)-1)*100
+        print("Day change is: \(String(format: "%.1f", dayChangeInPercent))%")
+        self.dayChangeLabel.text = "(\(String(format: "%.1f", dayChangeInPercent))%)"
+        print("Day change is: \(String(format: "%.1f", dayChangeInPercent))%")
+        if dayChangeInPercent > 0 {
+            self.dayChangeLabel.textColor = .green
+        } else if dayChangeInPercent < 0 {
+            self.dayChangeLabel.textColor = .red
+        } else {
+            self.dayChangeLabel.textColor = .gray
+        }
+    }
     
     var testString = "0"
     
     @IBAction func testButton(_ sender: UIButton) {
-        print(StocksDataManager.dictOfNubmerOfStocks)
-        StocksDataManager.refreshDictOfAmountsAndPortfolioAmount()
+        //        networkStockInfoManager.fetchPastStockPrice(forCompany: "AAPL") { _ in
+        //            print("Success parsed PastPrice")
+        StocksDataManager.pastStockPricesDictionaryFillingAPI { _ in
+            StocksDataManager.calculatePreviousDayPortfolioAmountAndSaveValueInUserDefaults()
+            self.calculateDayChangeInPercent()
+            
+//            print("Previous day Portfolio amount was: \(UserSettings.previousDayportfolioAmount)")
+//            let dayChangeInPercent = ((UserSettings.portfolioAmount/UserSettings.previousDayportfolioAmount)-1)*100
+//            print("Day change is: \(String(format: "%.1f", dayChangeInPercent))%")
+//            self.dayChangeLabel.text = "(\(String(format: "%.1f", dayChangeInPercent))%)"
+//            if dayChangeInPercent > 0 {
+//                self.dayChangeLabel.textColor = .green
+//            } else if dayChangeInPercent < 0 {
+//                self.dayChangeLabel.textColor = .red
+//            } else {
+//                self.dayChangeLabel.textColor = .gray
+//            }
+        }
+        //        }
     }
     
     // MARK: Editing Amount
@@ -55,6 +89,12 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
                         self.amountLabel.text = String(PortfolioAmount)
                         self.stocksInPortfolio = StocksDataManager.getPortfolio()
                         self.tableView.reloadData()
+                        
+                        // Расчет изменения стоимости портфеля за текущий день в %
+                        StocksDataManager.pastStockPricesDictionaryFillingAPI { _ in
+                            StocksDataManager.calculatePreviousDayPortfolioAmountAndSaveValueInUserDefaults()
+                            self.calculateDayChangeInPercent()
+                        }
                     }
                 } else {
                     self.amountLabel.text = "Bad value!"
@@ -119,37 +159,29 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         
         tableView.refreshControl = tableViewRefreshControl
         
-        // Изменение логики отображения загруженного портфеля.
-        // Данные о количестве акций - постоянные, до изменения суммы портфеля. Загружаются из UserDefaults
-        // Далее, по этим данным должно строиться TableView. При обновлении на оновном экране - должны получать только данные о ценах акций. 
         StocksDataManager.loadNumberOfStocksFromUserDefaults()
+        
         StocksDataManager.getOnlyPriceDataAPIandRefreshAllDictionaries { result in
-            // обновить функции обновления значений - обновлять значения в словарях
             StocksDataManager.refreshDictOfAmountsAndPortfolioAmount()
             StocksDataManager.refreshDictOfShares()
             PortfolioAmount = UserSettings.portfolioAmount
             self.activityIndicator.isHidden = true
-            // Загрузка суммы портфеля и отображение таблицы
             
+            // Загрузка суммы портфеля и отображение таблицы
             self.amountLabel.text = String(format: "%.2f", PortfolioAmount) + "$"
             self.stocksInPortfolio = StocksDataManager.getPortfolio()
             self.tableView.reloadData()
+            
+            // Расчет изменения стоимости портфеля за текущий день в %
+            StocksDataManager.pastStockPricesDictionaryFillingAPI { _ in
+                StocksDataManager.calculatePreviousDayPortfolioAmountAndSaveValueInUserDefaults()
+                self.calculateDayChangeInPercent()
+            }
         }
         
-//
-//        StocksDataManager.getMarketCapAndPriceDataAPIandFillAllDictionaries { result in
-//            PortfolioAmount = UserSettings.portfolioAmount
-//            StocksDataManager.stockSharesDictionaryFilling()
-//            StocksDataManager.dictOfAmountsFilling()
-//            StocksDataManager.dictOfNumberOfStocksFilling()
-//            self.activityIndicator.isHidden = true
-//
-//            // Загрузка суммы портфеля и отображение таблицы
-//            self.amountLabel.text = String(PortfolioAmount)
-//            self.stocksInPortfolio = StocksDataManager.getPortfolio()
-//            self.tableView.reloadData()
-//        }
-//          print(StocksDataManager.dictOfNubmerOfStocks)
+        
+        
+        
         // Добавляю свайп, по которому убирается клавиатура
         let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(self.hideKeyboardOnSwipeDown))
         swipeDown.delegate = self
@@ -161,16 +193,21 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     
     @objc private func refresh(sender: UIRefreshControl) {
         StocksDataManager.getOnlyPriceDataAPIandRefreshAllDictionaries { result in
-        // обновить функции обновления значений - обновлять значения в словарях
-        StocksDataManager.refreshDictOfAmountsAndPortfolioAmount()
-        StocksDataManager.refreshDictOfShares()
-        PortfolioAmount = UserSettings.portfolioAmount
-        self.activityIndicator.isHidden = true
-        // Загрузка суммы портфеля и отображение таблицы
-        
-        self.amountLabel.text = String(format: "%.2f", PortfolioAmount)  + "$"
-        self.stocksInPortfolio = StocksDataManager.getPortfolio()
-        self.tableView.reloadData()
+            StocksDataManager.refreshDictOfAmountsAndPortfolioAmount()
+            StocksDataManager.refreshDictOfShares()
+            PortfolioAmount = UserSettings.portfolioAmount
+            self.activityIndicator.isHidden = true
+            
+            // Загрузка суммы портфеля и отображение таблицы
+            self.amountLabel.text = String(format: "%.2f", PortfolioAmount)  + "$"
+            self.stocksInPortfolio = StocksDataManager.getPortfolio()
+            self.tableView.reloadData()
+            
+            // Расчет изменения стоимости портфеля за текущий день в %
+            StocksDataManager.pastStockPricesDictionaryFillingAPI { _ in
+                StocksDataManager.calculatePreviousDayPortfolioAmountAndSaveValueInUserDefaults()
+                self.calculateDayChangeInPercent()
+            }
         }
         sender.endRefreshing()
     }

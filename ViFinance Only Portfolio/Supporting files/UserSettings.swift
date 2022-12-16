@@ -14,7 +14,8 @@ final class UserSettings {
     
     private enum SettingsKeys: String {
         case amount
-        case portfolio
+        case previousDayAmount
+        case numberOfStocks
     }
     
     static var portfolioAmount: Double! {
@@ -26,6 +27,33 @@ final class UserSettings {
             if let amount = newValue {
                 defaults.set(amount, forKey: key)
                 
+            }
+        }
+    }
+    
+    static var previousDayportfolioAmount: Double! {
+        get {
+            return UserDefaults.standard.double(forKey: SettingsKeys.previousDayAmount.rawValue)
+        } set {
+            let defaults = UserDefaults.standard
+            let key = SettingsKeys.previousDayAmount.rawValue
+            if let amount = newValue {
+                defaults.set(amount, forKey: key)
+                
+            }
+        }
+    }
+    
+    // TODO:  Протестировать такое сохранение!
+    static var testDictOfNumbers: [String:Double]! {
+        get {
+            return UserDefaults.standard.dictionary(forKey: SettingsKeys.numberOfStocks.rawValue) as? [String : Double]
+        }
+        set {
+            let defaults = UserDefaults.standard
+            let key = SettingsKeys.numberOfStocks.rawValue
+            if let numberOfStocks = newValue {
+                defaults.set(numberOfStocks, forKey: key)
             }
         }
     }
