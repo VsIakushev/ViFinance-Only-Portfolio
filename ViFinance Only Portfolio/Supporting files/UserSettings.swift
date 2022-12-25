@@ -15,7 +15,9 @@ final class UserSettings {
     private enum SettingsKeys: String {
         case amount
         case previousDayAmount
+        case dateOfPreviousPrice
         case numberOfStocks
+        
     }
     
     static var portfolioAmount: Double! {
@@ -31,7 +33,7 @@ final class UserSettings {
         }
     }
     
-    static var previousDayportfolioAmount: Double! {
+    static var previousDayPortfolioAmount: Double! {
         get {
             return UserDefaults.standard.double(forKey: SettingsKeys.previousDayAmount.rawValue)
         } set {
@@ -39,9 +41,21 @@ final class UserSettings {
             let key = SettingsKeys.previousDayAmount.rawValue
             if let amount = newValue {
                 defaults.set(amount, forKey: key)
-                
             }
         }
+    }
+    
+    static var previousDayDate: String! {
+        get {
+            return UserDefaults.standard.string(forKey: SettingsKeys.dateOfPreviousPrice.rawValue)
+        }
+        set {
+            let defaults = UserDefaults.standard
+            let key = SettingsKeys.dateOfPreviousPrice.rawValue
+            if let date = newValue {
+                defaults.set(date, forKey: key)
+        }
+    }
     }
     
     // TODO:  Протестировать такое сохранение!

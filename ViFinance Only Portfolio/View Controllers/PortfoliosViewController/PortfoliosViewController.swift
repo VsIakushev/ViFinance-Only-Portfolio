@@ -24,14 +24,15 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     // TODO: Куда убрать?
     // Функция расчета изменения стоимости портфеля за текущий день.
     func calculateDayChangeInPercent() {
-        let dayChangeInPercent = ((UserSettings.portfolioAmount/UserSettings.previousDayportfolioAmount)-1)*100
+        
+        let dayChangeInPercent = ((UserSettings.portfolioAmount/UserSettings.previousDayPortfolioAmount)-1)*100
         print("Day change is: \(String(format: "%.1f", dayChangeInPercent))%")
         self.dayChangeLabel.text = "(\(String(format: "%.1f", dayChangeInPercent))%)"
         print("Day change is: \(String(format: "%.1f", dayChangeInPercent))%")
         if dayChangeInPercent > 0 {
-            self.dayChangeLabel.textColor = .green
+            self.dayChangeLabel.textColor = UIColor(red: 0.0, green: 0.5, blue: 0.0, alpha: 1.0)
         } else if dayChangeInPercent < 0 {
-            self.dayChangeLabel.textColor = .red
+            self.dayChangeLabel.textColor = UIColor(red: 0.7, green: 0.0, blue: 0.0, alpha: 1.0)
         } else {
             self.dayChangeLabel.textColor = .gray
         }
@@ -40,26 +41,13 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     var testString = "0"
     
     @IBAction func testButton(_ sender: UIButton) {
-        //        networkStockInfoManager.fetchPastStockPrice(forCompany: "AAPL") { _ in
-        //            print("Success parsed PastPrice")
-        StocksDataManager.pastStockPricesDictionaryFillingAPI { _ in
-            StocksDataManager.calculatePreviousDayPortfolioAmountAndSaveValueInUserDefaults()
-            self.calculateDayChangeInPercent()
-            
-//            print("Previous day Portfolio amount was: \(UserSettings.previousDayportfolioAmount)")
-//            let dayChangeInPercent = ((UserSettings.portfolioAmount/UserSettings.previousDayportfolioAmount)-1)*100
-//            print("Day change is: \(String(format: "%.1f", dayChangeInPercent))%")
-//            self.dayChangeLabel.text = "(\(String(format: "%.1f", dayChangeInPercent))%)"
-//            if dayChangeInPercent > 0 {
-//                self.dayChangeLabel.textColor = .green
-//            } else if dayChangeInPercent < 0 {
-//                self.dayChangeLabel.textColor = .red
-//            } else {
-//                self.dayChangeLabel.textColor = .gray
-//            }
-        }
-        //        }
+        print(stocksInPortfolio)
     }
+    @IBAction func testButton2(_ sender: UIButton) {
+        stocksInPortfolio.sorted(by: {$0.share > $1.share })
+        
+    }
+//    {$0.share > $1.share }
     
     // MARK: Editing Amount
     @IBAction func editPortfolioAmount(_ sender: UIButton) {
@@ -74,7 +62,6 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
                     UserSettings.portfolioAmount = PortfolioAmount
                     self.amountLabel.text = String(format: "%.2f", newPortfolioAmount)  + "$"
                     self.activityIndicator.isHidden = false
-                    
                     StocksDataManager.getMarketCapAndPriceDataAPIandFillAllDictionaries { result in
                         PortfolioAmount = UserSettings.portfolioAmount
                         StocksDataManager.stockSharesDictionaryFilling()
@@ -156,6 +143,9 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
     // MARK : viewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        testLabel.textColor = .red
+        
         
         tableView.refreshControl = tableViewRefreshControl
         

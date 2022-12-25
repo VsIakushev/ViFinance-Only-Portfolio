@@ -94,33 +94,108 @@ final class StocksDataManager {
         }
     }
     
+    // Функция: Сохранение новой даты вчерашних цен в UserDefaults
+    static func savePastPriceDateToUserDefaults() {
+        let group = DispatchGroup()
+        var errors: [Error] = []
+        group.enter()
+        networkStockInfoManager.fetchPastStockPrice(forCompany: "AAPL") { (dateOfPastStockPrice) in
+            syncQueue.async(flags: .barrier) {
+                switch dateOfPastStockPrice {
+                case let .success(datePastPrice):
+                    if let date = datePastPrice.date {
+                        UserSettings.previousDayDate = date
+                    }
+                case let .failure(error):
+                    errors.append(error)
+                }
+                group.leave()
+            }
+        }
+    }
+    
+    // TODO: !!!!!!!!!!!!!!!! Сделать возврат не Bool а escaping closure (Completion: ()->(Bool) ) проверить
+    
+    // Функция: Проверка актуальноcти даты вчерашних цен
+    static func pastPricesUpToDate() -> Bool {
+        let group = DispatchGroup()
+        var errors: [Error] = []
+        group.enter()
+        var dateOfRequest = "" // UserSettings.previousDayDate
+        networkStockInfoManager.fetchPastStockPrice(forCompany: "AAPL") { (dateOfPastStockPrice) in
+            syncQueue.async(flags: .barrier) {
+                switch dateOfPastStockPrice {
+                case let .success(datePastPrice):
+                    if let date = datePastPrice.date {
+                        dateOfRequest = date
+                        print("Date, recieved in check: \(date)")
+                    }
+                case let .failure(error):
+                    errors.append(error)
+                }
+                group.leave()
+            }
+        }
+        // выполняется в любом случае раньше запроса! Как исполнить после?
+        if dateOfRequest == UserSettings.previousDayDate {
+            print("PastData date is up to date")
+            return true
+        } else {
+            print("PastData isn't up to date, need to update PastPrice Data")
+            return false
+        }
+    }
+    
+    
+    
     // Функция : // наполнение dictOfPastPrices - цены закрытия прошлого дня
     static func pastStockPricesDictionaryFillingAPI(completion: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
         let group = DispatchGroup()
         var errors: [Error] = []
         // TODO: добавить проверку на ДАТУ, чтобы пропустить запрос, если уже есть данные на эту дату
-        let dateOfRequest = ""
-        
-        for ticker in arrayOfTickers {
-            group.enter()
-            networkStockInfoManager.fetchPastStockPrice(forCompany: ticker) { pastStockPrice in
-                syncQueue.async(flags: .barrier) {
-                    switch pastStockPrice {
-                    case let .success(pastPrice):
-                        self.dictOfPastPrices[ticker] = pastPrice.close
-                    case let .failure(error):
-                        errors.append(error)
+//        group.enter()
+//        var dateOfRequest = ""
+//        networkStockInfoManager.fetchPastStockPrice(forCompany: "AAPL") { (dateOfPastStockPrice) in
+//            syncQueue.async(flags: .barrier) {
+//                switch dateOfPastStockPrice {
+//                case let .success(datePastPrice):
+//                    if let date = datePastPrice.date {
+//                        dateOfRequest = date
+//                        UserSettings.previousDayDate = dateOfRequest
+//                    }
+//                    //и сохранить в юзердефалтс
+//                case let .failure(error):
+//                    errors.append(error)
+//                }
+//
+//                group.leave()
+//            }
+//        }
+        if pastPricesUpToDate() {
+            return
+        } else {
+            print("Updating past prices...")
+            for ticker in arrayOfTickers {
+                group.enter()
+                networkStockInfoManager.fetchPastStockPrice(forCompany: ticker) { pastStockPrice in
+                    syncQueue.async(flags: .barrier) {
+                        switch pastStockPrice {
+                        case let .success(pastPrice):
+                            self.dictOfPastPrices[ticker] = pastPrice.close
+                        case let .failure(error):
+                            errors.append(error)
+                        }
+                        
+                        group.leave()
                     }
-                    
-                    group.leave()
                 }
             }
-        }
-        group.notify(queue: .main) {
-            if errors.isEmpty {
-                completion(.success(()))
-            } else {
-                completion(.failure(.init(errors: errors)))
+            group.notify(queue: .main) {
+                if errors.isEmpty {
+                    completion(.success(()))
+                } else {
+                    completion(.failure(.init(errors: errors)))
+                }
             }
         }
     }
@@ -141,7 +216,7 @@ final class StocksDataManager {
                 }
 
             }
-            UserSettings.previousDayportfolioAmount = previousDayPortfolioAmount
+            UserSettings.previousDayPortfolioAmount = previousDayPortfolioAmount
         }
     }
     
