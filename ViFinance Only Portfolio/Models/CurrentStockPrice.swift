@@ -15,7 +15,13 @@ struct CurrentStockPrice {
         return "\(price)"
     }
     
-    init?(currentStockPriceData: CurrentStockPriceData) {
+    var priceDecimal: Decimal {
+        .init(price)
+    }
+}
+
+extension CurrentStockPrice {
+    init(currentStockPriceData: CurrentStockPriceData) {
         price = currentStockPriceData.first!.price
     }
 }

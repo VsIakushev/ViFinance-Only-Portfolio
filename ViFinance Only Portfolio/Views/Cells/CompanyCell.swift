@@ -18,12 +18,29 @@ final class CompanyCell: UITableViewCell {
     
     func configure(with info: CompanyInfoModel) {
         tickerLabel.text = info.ticker
-        shareLabel.text = String(info.share)
-        amountLabel.text = String(info.amount)
+        shareLabel.text = String(info.share)  + "%"
+        amountLabel.text = String(info.amount) + "$"
         priceLabel.text = String(info.price)
         quantityLabel.text = String(info.quantity)
     }
     
+    func configure(with info: CompanyInfo) {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
+        
+        let share = formatter.string(from: info.share * 100 as NSNumber) ?? ""
+        let amount = formatter.string(from: info.amount as NSNumber) ?? ""
+        let price = formatter.string(from: info.price as NSNumber) ?? ""
+        let quantity = formatter.string(from: info.quantity as NSNumber) ?? ""
+        
+        tickerLabel.text = info.ticker
+        
+        shareLabel.text = "\(share)%"
+        amountLabel.text = "\(amount)$"
+        priceLabel.text = price
+        quantityLabel.text = quantity
+    }
 }
 
 // TODO: результаты за день в %, зеленый если +, красный если -, и сравнение с S&P500

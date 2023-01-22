@@ -17,6 +17,7 @@ final class UserSettings {
         case previousDayAmount
         case dateOfPreviousPrice
         case numberOfStocks
+        case savedPortfolio
         
     }
     
@@ -59,7 +60,7 @@ final class UserSettings {
     }
     
     // TODO:  Протестировать такое сохранение!
-    static var testDictOfNumbers: [String:Double]! {
+    static var savedDictOfNumbers: [String:Double]! {
         get {
             return UserDefaults.standard.dictionary(forKey: SettingsKeys.numberOfStocks.rawValue) as? [String : Double]
         }
@@ -71,5 +72,19 @@ final class UserSettings {
             }
         }
     }
+    
+//    static var savedPortfolio: [CompanyInfoModel]! {
+//        get {
+//            return UserDefaults.standard.array(forKey: SettingsKeys.savedPortfolio.rawValue) as? [CompanyInfoModel]
+//        }
+//        set {
+//            let defaults = UserDefaults.standard
+//            let key = SettingsKeys.savedPortfolio.rawValue
+//            if let savedPortfolio = newValue {
+//                defaults.set(savedPortfolio, forKey: key)
+//            }
+//        }
+//    }
+    
 }
 

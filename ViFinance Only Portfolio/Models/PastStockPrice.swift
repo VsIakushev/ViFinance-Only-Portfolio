@@ -15,11 +15,11 @@ struct PastStockPrice {
     var stockPreviousPriceString : String {
         return "\(close)"
     }
-    
-    init?(pastStockPriceData: PastStockPriceData) {
+}
+
+extension PastStockPrice {
+    init(pastStockPriceData: PastStockPriceData) {
         close = pastStockPriceData.historical.first!.close
         date = pastStockPriceData.historical.first?.date
     }
-    
-    
 }

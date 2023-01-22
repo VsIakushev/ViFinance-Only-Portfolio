@@ -8,7 +8,44 @@
 
 import Foundation
 
-class NetworkStockManager {
+protocol NetworkStockManager {
+    func fetchStockPrice(
+        forCompany ticker: String,
+        completionHandler: @escaping (Result<CurrentStockPrice, Error>) -> Void
+    )
+    
+    func fetchPastStockPrice(
+        forCompany ticker: String,
+        completionHandler: @escaping (Result<PastStockPrice, Error>) -> Void
+    )
+    
+    func fetchStockMarketCapitalization(
+        forCompany ticker: String,
+        completionHandler: @escaping (Result<CurrentStockMarketCap, Error>) -> Void
+    )
+}
+
+final class NetworkStockManagerFake: NetworkStockManager {
+    func fetchStockPrice(forCompany ticker: String, completionHandler: @escaping (Result<CurrentStockPrice, Error>) -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
+            completionHandler(.success(.init(price: .random(in: 10...20))))
+        }
+    }
+    
+    func fetchPastStockPrice(forCompany ticker: String, completionHandler: @escaping (Result<PastStockPrice, Error>) -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
+            completionHandler(.success(.init(close: .random(in: 30...100), date: nil)))
+        }
+    }
+    
+    func fetchStockMarketCapitalization(forCompany ticker: String, completionHandler: @escaping (Result<CurrentStockMarketCap, Error>) -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
+            completionHandler(.success(.init(marketCap: .random(in: 1000...5000))))
+        }
+    }
+}
+
+final class NetworkStockManagerImpl: NetworkStockManager {
     private let session: URLSession = .shared
     
     func fetchStockPrice(forCompany ticker: String, completionHandler: @escaping (Result<CurrentStockPrice, Error>) -> Void) {
@@ -16,12 +53,15 @@ class NetworkStockManager {
         guard let url = URL(string: urlString) else { return }
         
         let task = session.dataTask(with: url) { data, response, error in
-            if let data = data, let currentStockPrice = self.parsePriceJSON(withData: data) {
-                completionHandler(.success(currentStockPrice))
+            if let data = data {
+                let result = Result {
+                    try self.parsePriceJSON(withData: data)
+                }
+                completionHandler(result)
             } else if let error = error {
                 completionHandler(.failure(error))
             } else {
-//                fatalError()
+                fatalError()
             }
         }
         task.resume()
@@ -33,12 +73,15 @@ class NetworkStockManager {
             guard let url = URL(string: urlString) else { return }
             
             let task = session.dataTask(with: url) { data, response, error in
-                if let data = data, let pastStockPrice = self.parsePastPriceJSON(withData: data) {
-                    completionHandler(.success(pastStockPrice))
+                if let data = data {
+                    let result = Result {
+                        try self.parsePastPriceJSON(withData: data)
+                    }
+                    completionHandler(result)
                 } else if let error = error {
                     completionHandler(.failure(error))
                 } else {
-    //                fatalError()
+                    fatalError()
                 }
             }
             task.resume()
@@ -51,57 +94,46 @@ class NetworkStockManager {
         guard let url = URL(string: urlString) else { return }
         
         let task = session.dataTask(with: url) { data, response, error in
-            if let data = data, let currentStockMarketCap = self.parseMarketCapJSON(withData: data) {
-                completionHandler(.success(currentStockMarketCap))
+            if let data = data {
+                let result = Result {
+                    try self.parseMarketCapJSON(withData: data)
+                }
+                completionHandler(result)
             } else if let error = error {
                 completionHandler(.failure(error))
             } else {
-//                fatalError()
+                fatalError()
             }
         }
         task.resume()
     }
     
-    func parsePriceJSON(withData data: Data) -> CurrentStockPrice? {
+    func parsePriceJSON(withData data: Data) throws -> CurrentStockPrice {
         let decoder = JSONDecoder()
-        do {
-            let currentStockPriceData = try decoder.decode(CurrentStockPriceData.self, from: data)
-            guard let currentStockprice = CurrentStockPrice(currentStockPriceData: currentStockPriceData) else { return nil }
-//            print(currentStockPriceData.first!.price)
-            return currentStockprice
-        } catch {
-            print(error)
-            return nil
-        }
+        
+        let currentStockPriceData = try decoder.decode(CurrentStockPriceData.self, from: data)
+        let currentStockprice = CurrentStockPrice(currentStockPriceData: currentStockPriceData)
+        
+        return currentStockprice
     }
     
     // new func to parse PastPrice
-    func parsePastPriceJSON(withData data: Data) -> PastStockPrice? {
+    func parsePastPriceJSON(withData data: Data) throws -> PastStockPrice {
         let decoder = JSONDecoder()
-        do {
-            let pastStockPriceData = try decoder.decode(PastStockPriceData.self, from: data)
-            guard let pastStockPrice = PastStockPrice(pastStockPriceData: pastStockPriceData) else { return nil }
-//            print("Previous day close price: \(pastStockPriceData.historical.first!.close)")
-            return pastStockPrice
-        } catch {
-            print(error)
-            return nil
-        }
+        
+        let pastStockPriceData = try decoder.decode(PastStockPriceData.self, from: data)
+        let pastStockPrice = PastStockPrice(pastStockPriceData: pastStockPriceData)
+        
+        return pastStockPrice
     }
     
-    
-    
-    func parseMarketCapJSON(withData data: Data) -> CurrentStockMarketCap? {
+    func parseMarketCapJSON(withData data: Data) throws -> CurrentStockMarketCap {
         let decoder = JSONDecoder()
-        do {
-            let currentStockMarketCapData = try decoder.decode(CurrentStockMarketCapData.self, from: data)
-            guard let currentStockMarketCap = CurrentStockMarketCap(currentStockMarketCapData: currentStockMarketCapData) else { return nil }
-//            print(currentStockMarketCapData.first!.marketCap)
-            return currentStockMarketCap
-            
-        } catch {
-            print(error)
-            return nil
-        }
+        
+        let currentStockMarketCapData = try decoder.decode(CurrentStockMarketCapData.self, from: data)
+        let currentStockMarketCap = CurrentStockMarketCap(currentStockMarketCapData: currentStockMarketCapData)
+
+        return currentStockMarketCap
+        
     }
 }

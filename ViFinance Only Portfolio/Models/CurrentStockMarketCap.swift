@@ -10,14 +10,22 @@ import Foundation
 
 struct CurrentStockMarketCap {
     let marketCap: Double
+    
     var marketCapInt : Int {
         return Int(marketCap)
     }
+    
+    var marketCapDecimal: Decimal {
+        return Decimal(marketCap)
+    }
+    
     var marketCapString : String {
         return "\(marketCap)"
     }
-    
-    init?(currentStockMarketCapData: CurrentStockMarketCapData) {
+}
+
+extension CurrentStockMarketCap {
+    init(currentStockMarketCapData: CurrentStockMarketCapData) {
         marketCap = currentStockMarketCapData.first!.marketCap
     }
 }

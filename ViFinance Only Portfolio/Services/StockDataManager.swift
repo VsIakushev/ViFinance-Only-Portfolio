@@ -8,9 +8,7 @@
 
 import Foundation
 
-
-
-let networkStockInfoManager = NetworkStockManager()
+private let networkStockInfoManager: NetworkStockManager = NetworkStockManagerFake()
 
 // StockDataManager обрабатывает данные, получаемые от NetworkStockManager, составляет словари, необходимые для составления TableView, формирует итоговый массив структур
 
@@ -239,7 +237,7 @@ final class StocksDataManager {
         syncQueue.sync(flags: .barrier) {
             for i in 0..<dictOfShares.count {
                 if let value = dictOfShares[arrayOfTickers[i]] {
-                    dictOfAmounts[arrayOfTickers[i]] = value*PortfolioAmount
+                    dictOfAmounts[arrayOfTickers[i]] = value*UserSettings.portfolioAmount
                 }
             }
         }
@@ -258,12 +256,13 @@ final class StocksDataManager {
     
     // Функция 6: Cохранение dictOfNumberOfStocks в память телефона (в UserDefaults)
     static func saveNumberOfStocksInUserDefaults() {
-        UserDefaults.standard.set(StocksDataManager.dictOfNubmerOfStocks, forKey: "numberOfStocks")
+//        UserDefaults.standard.set(StocksDataManager.dictOfNubmerOfStocks, forKey: "numberOfStocks")
+        UserSettings.savedDictOfNumbers = StocksDataManager.dictOfNubmerOfStocks //тест - сохранение тех же данных 
     }
     
     // Функция 7: Загрузка dictOfNumberOfStocks из памяти телефона (из UserDefaults)
     static func loadNumberOfStocksFromUserDefaults() {
-           if let numberOfStocks = UserDefaults.standard.dictionary(forKey: "numberOfStocks") as? [String : Double] {
+        if let numberOfStocks = UserSettings.savedDictOfNumbers {
                dictOfNubmerOfStocks = numberOfStocks
            }
        }
@@ -291,35 +290,48 @@ final class StocksDataManager {
     // Функция Получения данных о ценах при обновлении портфеля (Обновляем только цену акции)
     static func getOnlyPriceDataAPIandRefreshAllDictionaries(using completionHandler: @escaping (Result<Void, PortfolioFetchError>) -> Void) {
         stockPricesDictionaryFillingAPI { pricesResult in
-            var errors: [Error] = []
-            if case let .failure(error) = pricesResult {
-                errors.append(contentsOf: error.errors)
-            }
-            if errors.isEmpty {
-                completionHandler(.success(()))
-            } else {
-                completionHandler(.failure(.init(errors: errors)))
-            }
+            completionHandler(pricesResult)
+//            var errors: [Error] = []
+//            if case let .failure(error) = pricesResult {
+//                errors.append(contentsOf: error.errors)
+//            }
+//            if errors.isEmpty {
+//                completionHandler(.success(()))
+//            } else {
+//                completionHandler(.failure(.init(errors: errors)))
+//            }
         }
     }
     
     // Функция обновления словарей при обновлении только цены акций
     static func refreshDictOfAmountsAndPortfolioAmount() {
         syncQueue.sync(flags: .barrier) {
-            // считаем новое значение размера портфеля
-            var newPortfolioAmount = 0.0
-            for ticker in arrayOfTickers {
-                if
-                    let number = dictOfNubmerOfStocks[ticker],
-                    let price = dictOfPrices[ticker]
-                {
-                    let newAmount = round(Double(number) * Double(price)*10)/10
-                    dictOfAmounts[ticker] = newAmount
-                    newPortfolioAmount += newAmount
+            let amounts = arrayOfTickers
+                .lazy
+                .compactMap { ticker in
+                    zip(ticker, dictOfNubmerOfStocks[ticker], dictOfPrices[ticker])
                 }
-
-            }
-            UserSettings.portfolioAmount = newPortfolioAmount
+                .map { ticker, number, price in
+                    (ticker, round(number * price * 10) / 10)
+                }
+            
+            dictOfAmounts = Dictionary(uniqueKeysWithValues: amounts)
+            UserSettings.portfolioAmount = amounts.map { $1 }.reduce(0, +)
+            
+//            // считаем новое значение размера портфеля
+//            var newPortfolioAmount = 0.0
+//            for ticker in arrayOfTickers {
+//                if
+//                    let number = dictOfNubmerOfStocks[ticker],
+//                    let price = dictOfPrices[ticker]
+//                {
+//                    let newAmount = round(number * price * 10) / 10
+//                    dictOfAmounts[ticker] = newAmount
+//                    newPortfolioAmount += newAmount
+//                }
+//
+//            }
+//            UserSettings.portfolioAmount = newPortfolioAmount
         }
     }
     
@@ -348,15 +360,20 @@ final class StocksDataManager {
             {
                 portfolio.append(CompanyInfoModel(
                     ticker: ticker,
-                    share: String(format: "%.2f", valueShare*100) + "%",
-                    amount: String(format: "%.2f", valueAmount) + "$",
+                    share: String(format: "%.2f", valueShare*100),
+                    amount: String(format: "%.2f", valueAmount),
                     price: String(format: "%.2f", valuePrice),
                     quantity: String(format: "%.1f", valueNumberOfStocks)
                 ))
             }
         }
         // сортировка по доле компании в портфеле
-        portfolio = portfolio.sorted(by: {$0.share > $1.share })
+        portfolio = portfolio.sorted(by: { $0.share > $1.share })
+        
+        
+        // сохранение портфеля в userDefaults
+//        UserSettings.savedPortfolio = portfolio
+        
         return portfolio
     }
     
