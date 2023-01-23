@@ -29,23 +29,19 @@ struct Portfolio {
 }
 
 protocol StockDataService {
-    func getStockData(
-        for amount: Decimal,
-        completion: @escaping (Result<Portfolio, Error>) -> Void
-    )
+    func getStockData(for amount: Decimal) async throws -> Portfolio
 }
 
 struct StockDataServiceFake: StockDataService {
-    func getStockData(for amount: Decimal, completion: @escaping (Result<Portfolio, Error>) -> Void)  {
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
-            completion(.success(.init(
-                stocks: [
-                    .init(ticker: "MSFT", share: 0.6, amount: amount * 0.6, price: 25, quantity: 20),
-                    .init(ticker: "APPL", share: 0.4, amount: amount * 0.4, price: 30, quantity: 10),
-                ],
-                amount: amount
-            )))
-        }
+    func getStockData(for amount: Decimal) async throws -> Portfolio {
+        try await Task.sleep(nanoseconds: 500 * 1000)
+        return .init(
+            stocks: [
+                .init(ticker: "MSFT", share: 0.6, amount: amount * 0.6, price: 25, quantity: 20),
+                .init(ticker: "APPL", share: 0.4, amount: amount * 0.4, price: 30, quantity: 10),
+            ],
+            amount: amount
+        )
     }
 }
 
@@ -62,25 +58,11 @@ final class StockDataServiceImpl: StockDataService {
         self.networkStockManager = networkStockManager
     }
     
-    func getStockData(
-        for amount: Decimal,
-        completion: @escaping (Result<Portfolio, Error>) -> Void
-    ) {
-        self.getAllMarketCaps { capsResult in
-            self.getAllPrices { pricesResult in
-                if case .failure(let failure) = capsResult {
-                    return completion(.failure(failure))
-                }
-                if case .failure(let failure) = pricesResult {
-                    return completion(.failure(failure))
-                }
-
-                if case .success(let caps) = capsResult, case .success(let prices) = pricesResult {
-                    let portfolio = self.calculatePortfolio(for: amount, caps: caps, prices: prices)
-                    completion(.success(portfolio))
-                }
-            }
-        }
+    func getStockData(for amount: Decimal) async throws -> Portfolio {
+        async let caps = getAllMarketCaps()
+        async let prices = getAllPrices()
+        
+        return calculatePortfolio(for: amount, caps: try await caps, prices: try await prices)
     }
     
     private func calculatePortfolio(
@@ -130,63 +112,23 @@ final class StockDataServiceImpl: StockDataService {
         )
     }
     
-    private func getAllMarketCaps(completion: @escaping (Result<[String: CurrentStockMarketCap], PortfolioFetchError>) -> Void){
+    private func getAllMarketCaps() async throws -> [String: CurrentStockMarketCap] {
         var caps: [String: CurrentStockMarketCap] = [:]
-        var errors: [Error] = []
-        
-        let group = DispatchGroup()
         
         for ticker in tickers {
-            group.enter()
-            networkStockManager.fetchStockMarketCapitalization(forCompany: ticker) { currentStockMarketCap in
-                self.syncQueue.async(flags: .barrier) {
-                    switch currentStockMarketCap {
-                    case let .success(cap):
-                        caps[ticker] = cap
-                    case let .failure(error):
-                        errors.append(error)
-                    }
-                    
-                    group.leave()
-                }
-            }
+            caps[ticker] = try await networkStockManager.fetchStockMarketCapitalization(forCompany: ticker)
         }
         
-        group.notify(queue: .main) {
-            if errors.isEmpty {
-                completion(.success(caps))
-            } else {
-                completion(.failure(PortfolioFetchError(errors: errors)))
-            }
-        }
+        return caps
     }
     
-    private func getAllPrices(completion: @escaping (Result<[String: CurrentStockPrice], PortfolioFetchError>) -> Void) {
-        let group = DispatchGroup()
+    private func getAllPrices() async throws -> [String: CurrentStockPrice] {
         var prices: [String: CurrentStockPrice] = [:]
-        var errors: [Error] = []
         
         for ticker in tickers {
-            group.enter()
-            networkStockManager.fetchStockPrice(forCompany: ticker) { currentStockPrice in
-                self.syncQueue.async(flags: .barrier) {
-                    switch currentStockPrice {
-                    case let .success(price):
-                        prices[ticker] = price
-                    case let .failure(error):
-                        errors.append(error)
-                    }
-                    
-                    group.leave()
-                }
-            }
+            prices[ticker] = try await networkStockManager.fetchStockPrice(forCompany: ticker)
         }
-        group.notify(queue: .main) {
-            if errors.isEmpty {
-                completion(.success(prices))
-            } else {
-                completion(.failure(.init(errors: errors)))
-            }
-        }
+        
+        return prices
     }
 }

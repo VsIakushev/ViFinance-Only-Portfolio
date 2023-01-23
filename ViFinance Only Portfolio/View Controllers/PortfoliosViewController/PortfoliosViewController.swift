@@ -148,16 +148,16 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
         let amount = Decimal(UserSettings.portfolioAmount)
         self.amountLabel.text = "\(amount)$"
         
-        stockDataSvc.getStockData(for: amount) { result in
-            switch result {
-            case .success(let success):
-                self.portfolio = success
-                self.tableView.reloadData()
-            case .failure(let failure):
-                print("Failed to get data: \(failure)")
+        Task {
+            do {
+                self.portfolio = try await stockDataSvc.getStockData(for: amount)
+            } catch {
+                print("Got error while getting portfolio: \(error)")
             }
             
+            self.tableView.reloadData()
             self.activityIndicator.stopAnimating()
+            self.tableViewRefreshControl.endRefreshing()
         }
     }
     
@@ -224,7 +224,6 @@ class PortfoliosViewController: UIViewController, UIGestureRecognizerDelegate {
 //                self.calculateDayChangeInPercent()
 //            }
 //        }
-        sender.endRefreshing()
     }
 }
 
